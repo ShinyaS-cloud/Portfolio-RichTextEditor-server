@@ -7,11 +7,11 @@ export class Posts {
   @PrimaryGeneratedColumn()
   id?: number
 
-  @Column({ nullable: false })
-  quantity!: number
+  @Column({ type: 'int', nullable: false })
+  quantity?: number
 
   @Column({ type: 'int', nullable: true })
-  postId!: number
+  postId?: number
 
   @ManyToOne(() => UserPosts, (userPosts) => userPosts.posts, { cascade: true })
   @JoinColumn({ name: 'postId' })

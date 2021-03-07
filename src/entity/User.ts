@@ -6,14 +6,20 @@ export class User {
   @PrimaryGeneratedColumn()
   id?: number
 
-  @Column({ nullable: false, unique: true })
+  @Column({ type: 'char', length: 200, nullable: false, unique: true })
   password!: string
 
-  @Column({ nullable: false })
+  @Column({ type: 'char', length: 50, nullable: true })
   email!: string
 
   @Column({ type: 'int', nullable: true })
-  postId!: number
+  postId?: number
+
+  @Column({ type: 'char', length: 50, nullable: true })
+  googleID?: string
+
+  @Column({ type: 'boolean', nullable: false })
+  loginGoogle!: boolean
 
   @OneToOne(() => UserPosts, (userPosts) => userPosts.user)
   @JoinColumn({ name: 'userpostsId' })
