@@ -1,8 +1,10 @@
-import createError from 'http-errors'
+import 'reflect-metadata'
+// import createError from 'http-errors'
 import express from 'express'
 import path from 'path'
 import cookieParser from 'cookie-parser'
 
+import passport from 'passport'
 import { createConnection, getConnection, getRepository } from 'typeorm'
 import session from 'express-session'
 import { useExpressServer } from 'routing-controllers'
@@ -13,10 +15,10 @@ import { User } from './entity/User'
 import { UserController } from './controllers/userController'
 const MysqlDBStore = require('express-mysql-session')(session)
 
-interface Error {
-  status?: number
-  message?: string
-}
+// interface Error {
+//   status?: number
+//   message?: string
+// }
 const app = express()
 
 app.use(express.json())
@@ -29,9 +31,21 @@ const csrfProtection = csrf()
 createConnection().then(async () => {
   const ormConnection: any = getConnection().driver
   const store = new MysqlDBStore({}, ormConnection.pool)
-  app.use(session({ secret: 'mySecret', resave: false, saveUninitialized: false, store: store }))
   app.use(csrfProtection)
   app.use(flash())
+  app.use(
+    session({
+      secret: 'mySecret',
+      resave: false,
+      saveUninitialized: false,
+      store: store,
+      cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 30
+      }
+    })
+  )
+  app.use(passport.initialize())
+  app.use(passport.session())
   const userRepositry = getRepository(User)
   useExpressServer(app, {
     controllers: [UserController],
@@ -77,21 +91,21 @@ createConnection().then(async () => {
   const user = await userfind()
   await userCreate(user)
 
-  // catch 404 and forward to error handler
-  app.use((req, res, next) => {
-    next(createError(404))
-  })
+  // // catch 404 and forward to error handler
+  // app.use((req, res, next) => {
+  //   next(createError(404))
+  // })
 
-  // error handler
-  app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    // set locals, only providing error in development
-    res.locals.message = err.message
-    res.locals.error = req.app.get('env') === 'development' ? err : {}
+  // // error handler
+  // app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  //   // set locals, only providing error in development
+  //   res.locals.message = err.message
+  //   res.locals.error = req.app.get('env') === 'development' ? err : {}
 
-    // render the error page
-    res.status(err.status || 500)
-    res.render('error')
-  })
+  //   // render the error page
+  //   res.status(err.status || 500)
+  //   res.json('error')
+  // })
 
   const PORT = process.env.PORT || 5000
   app.listen(PORT)

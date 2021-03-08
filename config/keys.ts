@@ -1,5 +1,4 @@
 // key.ts figure out what set of credentials to return
-import 'node'
 
 interface KeyTypes {
   googleClientID: string
