@@ -7,16 +7,16 @@ export class User {
   id?: number
 
   @Column({ type: 'char', length: 200, nullable: false, unique: true })
-  password!: string
+  password?: string
 
   @Column({ type: 'char', length: 50, nullable: true })
-  email!: string
+  email?: string
 
   @Column({ type: 'int', nullable: true })
   postId?: number
 
   @Column({ type: 'char', length: 50, nullable: true })
-  googleID?: string
+  googleId?: string
 
   @Column({ type: 'boolean', nullable: false })
   loginGoogle!: boolean

@@ -3,7 +3,7 @@ import Google from 'passport-google-oauth20'
 import { getRepository } from 'typeorm'
 import { User } from '../entity/User'
 
-import { keys } from '../config/keys'
+import { keys } from '../../config/keys'
 
 const userRepositry = getRepository(User)
 

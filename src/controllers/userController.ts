@@ -6,25 +6,25 @@ import passport from 'passport'
 
 @JsonController()
 export class UserController {
-  @UseBefore(passport.authenticate('google', { scope: ['profile', 'email'] }))
   @Get('/auth/google')
+  @UseBefore(passport.authenticate('google', { scope: ['profile', 'email'] }))
   getAuth() {}
 
-  @UseBefore(passport.authenticate('google'))
   @Get('/auth/google/callback')
+  @UseBefore(passport.authenticate('google'))
   @Redirect('/')
   getAuthCallback() {}
 
+  @Get('/api/current_user')
   @UseBefore((req: express.Request, res: express.Response) => {
     res.send(req.user)
   })
-  @Get('/api/current_user')
   getCurrentUser() {}
 
+  @Get('/api/logout')
   @UseBefore((req: express.Request, res: express.Response) => {
     req.logout()
     res.redirect('/')
   })
-  @Get('/api/logout')
   getLogout() {}
 }

@@ -1,9 +1,7 @@
 // key.ts figure out what set of credentials to return
-
 interface KeyTypes {
-  googleClientID: string
+  googleClientId: string
   googleClientSecret: string
-  cookieKey: string
 }
 
 let keys: KeyTypes
