@@ -1,10 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm'
-import { UserPosts } from './UserPosts'
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, OneToMany, JoinColumn } from 'typeorm'
+import { Post } from './Post'
+import { Favorites } from './Favorites'
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id?: number
+
+  @Column({ type: 'char', length: 30, nullable: true })
+  name?: string
 
   @Column({ type: 'char', length: 200, nullable: true })
   password?: string
@@ -15,13 +19,16 @@ export class User {
   @Column({ type: 'int', nullable: true })
   postId?: number
 
-  @Column({ type: 'char', length: 50, nullable: true })
+  @Column({ type: 'char', length: 200, nullable: true })
   googleId?: string
 
   @Column({ type: 'boolean', nullable: false })
   loginGoogle!: boolean
 
-  @OneToOne(() => UserPosts, (userPosts) => userPosts.user)
-  @JoinColumn({ name: 'userpostsId' })
-  userPosts?: UserPosts
+  @OneToOne(() => Post, (post) => post.user)
+  @JoinColumn({ name: 'postId' })
+  post?: Post
+
+  @OneToMany(() => Favorites, (favorites) => favorites.user)
+  favorites!: Favorites[]
 }
