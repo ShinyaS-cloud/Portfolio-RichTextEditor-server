@@ -6,7 +6,7 @@ export class User {
   @PrimaryGeneratedColumn()
   id?: number
 
-  @Column({ type: 'char', length: 200, nullable: false, unique: true })
+  @Column({ type: 'char', length: 200, nullable: true })
   password?: string
 
   @Column({ type: 'char', length: 50, nullable: true })

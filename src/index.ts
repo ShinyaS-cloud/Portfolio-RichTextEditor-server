@@ -48,6 +48,16 @@ createConnection()
       })
     )
     // passportとセッションの紐づけ
+    // ユーザーデータからユニークユーザー識別子を取り出す
+    passport.serializeUser((user, done) => {
+      done(null, user)
+    })
+
+    // ユニークユーザー識別子からユーザーデータを取り出す
+    passport.deserializeUser(async (id, done) => {
+      const user = await userRepositry.findOne({ where: { id: id } })
+      done(null, user)
+    })
     // passportとStrategyの紐づけ
 
     passport.use(
@@ -62,28 +72,18 @@ createConnection()
           const existingUser = await userRepositry.findOne({ where: { googleId: profile.id } })
           if (existingUser !== undefined) {
             console.log('we already have a record with the given profile ID')
-            done('we already have a record with the given profile ID', existingUser)
+            done(undefined, existingUser)
           } else {
             console.log('We dont have a recode with this ID,make a new record!')
             const user = new User()
             user.googleId = profile.id
             user.loginGoogle = true
             await userRepositry.save(user)
-            done('We dont have a recode with this ID,make a new record!', user)
+            done(undefined, user)
           }
         }
       )
     )
-    // ユーザーデータからユニークユーザー識別子を取り出す
-    passport.serializeUser((user, done) => {
-      done(null, user)
-    })
-
-    // ユニークユーザー識別子からユーザーデータを取り出す
-    passport.deserializeUser(async (id, done) => {
-      const user = await userRepositry.findOne({ where: { id: id } })
-      done(null, user)
-    })
 
     app.use(passport.initialize())
     app.use(passport.session())
