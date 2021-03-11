@@ -17,6 +17,9 @@ export class Post {
   @Column({ type: 'int', nullable: false })
   category!: number
 
+  @Column({ type: 'json', nullable: false })
+  content!: JSON
+
   @Column({ type: 'int', nullable: true })
   userId!: number
 
