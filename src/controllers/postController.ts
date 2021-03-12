@@ -4,7 +4,7 @@ import { Get, JsonController, Param, Redirect, Session } from 'routing-controlle
 
 import { getRepository } from 'typeorm'
 import { Article } from '../entity/Article'
-import { Posts } from '../entity/Posts'
+import { Users } from '../entity/Users'
 const categories = {
   pet: { id: 0, name: 'pet' },
   sports: { id: 1, name: 'sports' },
@@ -18,7 +18,7 @@ type CategoryTypes = keyof typeof categories
 @JsonController()
 export class PostController {
   articleRepositry = getRepository(Article)
-  postsRepositry = getRepository(Posts)
+  usersRepositry = getRepository(Users)
 
   /// paramsで指定されたカテゴリーのポストを返す
   @Get('/api/post/:categoryName')
@@ -41,19 +41,22 @@ export class PostController {
   async getNewPost(@Session() session: any) {
     try {
       const article = new Article()
+      const users = await this.usersRepositry.findOne({
+        where: { userId: session.passport.user.id }
+      })
+      article.users = users
       const newArticle = await this.articleRepositry.save(article)
-      let posts = await this.postsRepositry.findOne({ where: { userId: session.passport.user.id } })
 
-      // posts新規作成の場合
-      if (posts === undefined) {
-        posts = new Posts()
-        posts.users = session.passport.user
+      if (users === undefined) {
+        return console.log('error')
       }
-      if (posts.article === undefined) {
-        posts.article = []
+
+      // 新規作成の場合
+      if (users.article === undefined) {
+        users.article = []
       }
-      posts.article = [...posts.article, article]
-      await this.postsRepositry.save(posts)
+      users.article = [...users.article, article]
+      await this.usersRepositry.save(users)
       return { articleId: newArticle.id }
     } catch (error) {
       console.log(error)

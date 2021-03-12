@@ -4,7 +4,7 @@ import express from 'express'
 import path from 'path'
 import cookieParser from 'cookie-parser'
 import passport from 'passport'
-import { createConnection, getConnection, getRepository } from 'typeorm'
+import { createConnection, getConnection, getManager, getRepository } from 'typeorm'
 import session from 'express-session'
 import { useExpressServer } from 'routing-controllers'
 import bcrypt from 'bcrypt'
@@ -34,6 +34,7 @@ createConnection()
     const ormConnection: any = getConnection().driver
     const store = new MysqlDBStore({}, ormConnection.pool)
     const userRepositry = getRepository(Users)
+    const EntityManager = getManager()
 
     const GoogleStrategy = Google.Strategy
 
@@ -128,13 +129,11 @@ createConnection()
       try {
         if (!user) {
           const password = await bcrypt.hash('Max', 12)
-          const update = userRepositry.create({
-            password: password,
-            email: 'test@test.com',
-            loginGoogle: false
-          })
-
-          await userRepositry.save(update)
+          const update = new Users()
+          update.password = password
+          update.email = 'test@test.com'
+          update.loginGoogle = false
+          await EntityManager.save(update)
         }
         return await userRepositry.findOne(1)
       } catch (err) {
