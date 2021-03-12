@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm'
-import { User } from './User'
+import { Users } from './Users'
 import { Article } from './Article'
 
 @Entity()
@@ -10,9 +10,9 @@ export class Posts {
   @Column({ type: 'int', nullable: true })
   userId?: number
 
-  @OneToOne(() => User, (user) => user.posts, { cascade: true })
+  @OneToOne(() => Users, (users) => users.posts, { cascade: true })
   @JoinColumn({ name: 'userId' })
-  user?: User
+  users?: Users
 
   @OneToMany(() => Article, (article) => article.posts, { cascade: true })
   article?: Article[]

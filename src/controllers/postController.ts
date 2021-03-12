@@ -1,6 +1,6 @@
 /* eslint-disable space-before-function-paren */
 import 'reflect-metadata'
-import { Get, JsonController, Param, Session } from 'routing-controllers'
+import { Get, JsonController, Param, Redirect, Session } from 'routing-controllers'
 
 import { getRepository } from 'typeorm'
 import { Article } from '../entity/Article'
@@ -37,20 +37,24 @@ export class PostController {
   }
 
   @Get('/newpost')
-  async getNewPost(@Session('user') session: any) {
+  @Redirect('/newpost/:articleId')
+  async getNewPost(@Session() session: any) {
     try {
       const article = new Article()
-      await this.articleRepositry.save(article)
-      let posts = await this.postsRepositry.findOne({ where: { userId: session.id } })
+      const newArticle = await this.articleRepositry.save(article)
+      let posts = await this.postsRepositry.findOne({ where: { userId: session.passport.user.id } })
+
+      // posts新規作成の場合
       if (posts === undefined) {
         posts = new Posts()
-        posts.user = session
+        posts.users = session.passport.user
       }
       if (posts.article === undefined) {
         posts.article = []
       }
       posts.article = [...posts.article, article]
       await this.postsRepositry.save(posts)
+      return { articleId: newArticle.id }
     } catch (error) {
       console.log(error)
     }

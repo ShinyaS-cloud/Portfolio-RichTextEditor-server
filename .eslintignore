@@ -2,7 +2,7 @@
 serviceWorker.ts
 # dependencies
 /node_modules
-
+./src/migration
 # testing
 /coverage
 

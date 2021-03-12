@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm'
-import { User } from './User'
+import { Users } from './Users'
 import { Article } from './Article'
 
 @Entity()
@@ -13,9 +13,9 @@ export class Favorites {
   @Column({ type: 'int', nullable: true })
   articleId!: number
 
-  @ManyToOne(() => User, (user) => user.favorites, { cascade: true })
+  @ManyToOne(() => Users, (users) => users.favorites, { cascade: true })
   @JoinColumn({ name: 'userId' })
-  user?: User
+  users?: Users
 
   @ManyToOne(() => Article, (article) => article.favorites, { cascade: true })
   @JoinColumn({ name: 'articleId' })

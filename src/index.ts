@@ -12,8 +12,9 @@ import flash from 'connect-flash'
 import csrf from 'csurf'
 import Google from 'passport-google-oauth20'
 import { keys } from '../config/keys'
-import { User } from './entity/User'
+import { Users } from './entity/Users'
 import { UserController } from './controllers/userController'
+import { PostController } from './controllers/postController'
 const MysqlDBStore = require('express-mysql-session')(session)
 
 // interface Error {
@@ -32,7 +33,7 @@ createConnection()
   .then(async () => {
     const ormConnection: any = getConnection().driver
     const store = new MysqlDBStore({}, ormConnection.pool)
-    const userRepositry = getRepository(User)
+    const userRepositry = getRepository(Users)
 
     const GoogleStrategy = Google.Strategy
 
@@ -54,7 +55,7 @@ createConnection()
     })
 
     // ユニークユーザー識別子からユーザーデータを取り出す
-    passport.deserializeUser(async (serializeUser: User, done) => {
+    passport.deserializeUser(async (serializeUser: Users, done) => {
       try {
         const user = await userRepositry.findOne({ where: { id: serializeUser.id } })
         done(null, user)
@@ -80,7 +81,7 @@ createConnection()
               done(undefined, existingUser)
             } else {
               console.log('We dont have a recode with this ID,make a new record!')
-              const user = new User()
+              const user = new Users()
               user.googleId = profile.id
               user.loginGoogle = true
               await userRepositry.save(user)
@@ -98,7 +99,7 @@ createConnection()
     app.use(csrfProtection)
     app.use(flash())
     useExpressServer(app, {
-      controllers: [UserController],
+      controllers: [UserController, PostController],
       authorizationChecker: async (action, roles: string[]) => {
         action.response.locals.isAuthenticated = action.request.session.isLoggedIn
         action.response.locals.csrfToken = action.request.csrfToken()
@@ -143,21 +144,28 @@ createConnection()
     const user = await userfind()
     await userCreate(user)
 
+    // app.get('/', function (req, res) {
+    //   console.log(1)
+    //   res.send('ok')
+    // })
+
     // // catch 404 and forward to error handler
     // app.use((req, res, next) => {
     //   next(createError(404))
     // })
 
     // // error handler
-    // app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    //   // set locals, only providing error in development
-    //   res.locals.message = err.message
-    //   res.locals.error = req.app.get('env') === 'development' ? err : {}
+    // app.use(
+    //   (err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    //     // set locals, only providing error in development
+    //     res.locals.message = err.message
+    //     res.locals.error = req.app.get('env') === 'development' ? err : {}
 
-    //   // render the error page
-    //   res.status(err.status || 500)
-    //   res.json('error')
-    // })
+    //     // render the error page
+    //     res.status(err.status || 500)
+    //     // res.json('error')
+    //   }
+    // )
 
     const PORT = process.env.PORT || 5000
     app.listen(PORT)
