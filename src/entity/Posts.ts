@@ -1,19 +1,19 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm'
-
-import { Post } from './Post'
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm'
+import { User } from './User'
+import { Article } from './Article'
 
 @Entity()
 export class Posts {
   @PrimaryGeneratedColumn()
   id?: number
 
-  @Column({ type: 'int', nullable: false })
-  quantity!: number
-
   @Column({ type: 'int', nullable: true })
-  postId!: number
+  userId?: number
 
-  @ManyToOne(() => Post, (post) => post.posts, { cascade: true })
-  @JoinColumn({ name: 'postId' })
-  post?: Post
+  @OneToOne(() => User, (user) => user.posts, { cascade: true })
+  @JoinColumn({ name: 'userId' })
+  user?: User
+
+  @OneToMany(() => Article, (article) => article.posts, { cascade: true })
+  article?: Article[]
 }

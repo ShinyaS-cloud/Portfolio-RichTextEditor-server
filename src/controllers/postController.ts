@@ -1,9 +1,10 @@
 /* eslint-disable space-before-function-paren */
 import 'reflect-metadata'
-import { Get, JsonController, Param } from 'routing-controllers'
+import { Get, JsonController, Param, Session } from 'routing-controllers'
 
 import { getRepository } from 'typeorm'
-import { Post } from 'src/entity/Post'
+import { Article } from '../entity/Article'
+import { Posts } from '../entity/Posts'
 const categories = {
   pet: { id: 0, name: 'pet' },
   sports: { id: 1, name: 'sports' },
@@ -16,16 +17,17 @@ const categories = {
 type CategoryTypes = keyof typeof categories
 @JsonController()
 export class PostController {
-  postRepositry = getRepository(Post)
+  articleRepositry = getRepository(Article)
+  postsRepositry = getRepository(Posts)
 
   /// paramsで指定されたカテゴリーのポストを返す
   @Get('/api/post/:categoryName')
-  async getPost(@Param('categoryName') param: CategoryTypes) {
+  async getArticle(@Param('categoryName') param: CategoryTypes) {
     try {
-      const post = await this.postRepositry.find({ where: { category: categories[param].id } })
+      const post = await this.articleRepositry.find({ where: { category: categories[param].id } })
 
       const fetchPost = post.map((p) => {
-        return { postId: p.id, title: p.title, imageUrl: p.imageUrl, userId: p.user }
+        return { articleId: p.id, title: p.title, imageUrl: p.imageUrl }
       })
 
       return fetchPost
@@ -35,5 +37,22 @@ export class PostController {
   }
 
   @Get('/newpost')
-  getNewPost() {}
+  async getNewPost(@Session('user') session: any) {
+    try {
+      const article = new Article()
+      await this.articleRepositry.save(article)
+      let posts = await this.postsRepositry.findOne({ where: { userId: session.id } })
+      if (posts === undefined) {
+        posts = new Posts()
+        posts.user = session
+      }
+      if (posts.article === undefined) {
+        posts.article = []
+      }
+      posts.article = [...posts.article, article]
+      await this.postsRepositry.save(posts)
+    } catch (error) {
+      console.log(error)
+    }
+  }
 }

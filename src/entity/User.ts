@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToOne, OneToMany, JoinColumn } from 'typeorm'
-import { Post } from './Post'
+import { Posts } from './Posts'
 import { Favorites } from './Favorites'
 
 @Entity()
@@ -17,7 +17,7 @@ export class User {
   email?: string
 
   @Column({ type: 'int', nullable: true })
-  postId?: number
+  postsId?: number
 
   @Column({ type: 'char', length: 200, nullable: true })
   googleId?: string
@@ -25,9 +25,9 @@ export class User {
   @Column({ type: 'boolean', nullable: false })
   loginGoogle!: boolean
 
-  @OneToOne(() => Post, (post) => post.user)
-  @JoinColumn({ name: 'postId' })
-  post?: Post
+  @OneToOne(() => Posts, (posts) => posts.user)
+  @JoinColumn({ name: 'postsId' })
+  posts?: Posts
 
   @OneToMany(() => Favorites, (favorites) => favorites.user)
   favorites!: Favorites[]
