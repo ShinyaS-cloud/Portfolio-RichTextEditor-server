@@ -10,6 +10,7 @@ import { useExpressServer } from 'routing-controllers'
 import bcrypt from 'bcrypt'
 import flash from 'connect-flash'
 import csrf from 'csurf'
+import jwt from 'express-jwt'
 import Google from 'passport-google-oauth20'
 import { keys } from '../config/keys'
 import { Users } from './entity/Users'
@@ -28,7 +29,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
-const csrfProtection = csrf()
+const csrfProtection = csrf({ cookie: true })
 createConnection()
   .then(async () => {
     const ormConnection: any = getConnection().driver
@@ -98,6 +99,9 @@ createConnection()
     app.use(passport.initialize())
     app.use(passport.session())
     app.use(csrfProtection)
+    app.use(
+      jwt({ secret: 'secret123', algorithms: ['HS256'], getToken: (req) => req.cookies.token })
+    )
     app.use(flash())
     useExpressServer(app, {
       controllers: [UserController, PostController],

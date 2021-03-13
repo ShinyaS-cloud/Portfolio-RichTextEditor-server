@@ -16,9 +16,6 @@ export class Users {
   @Column({ type: 'char', length: 50, nullable: true })
   email?: string
 
-  @Column({ type: 'int', nullable: true })
-  articleId?: number
-
   @Column({ type: 'char', length: 200, nullable: true })
   googleId?: string
 

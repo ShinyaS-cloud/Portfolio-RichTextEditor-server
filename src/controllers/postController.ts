@@ -1,6 +1,8 @@
 /* eslint-disable space-before-function-paren */
 import 'reflect-metadata'
-import { Get, JsonController, Param, Redirect, Session } from 'routing-controllers'
+import { Get, JsonController, Param, Post, Redirect, Req, Res, Session } from 'routing-controllers'
+
+import express from 'express'
 
 import { getRepository } from 'typeorm'
 import { Article } from '../entity/Article'
@@ -36,13 +38,14 @@ export class PostController {
     }
   }
 
-  @Get('/newpost')
+  @Get('/api/newpost')
   @Redirect('/newpost/:articleId')
   async getNewPost(@Session() session: any) {
     try {
       const article = new Article()
+
       const users = await this.usersRepositry.findOne({
-        where: { userId: session.passport.user.id }
+        where: { id: session.passport.user.id }
       })
       article.users = users
       const newArticle = await this.articleRepositry.save(article)
@@ -51,13 +54,35 @@ export class PostController {
         return console.log('error')
       }
 
-      // 新規作成の場合
-      if (users.article === undefined) {
-        users.article = []
-      }
-      users.article = [...users.article, article]
-      await this.usersRepositry.save(users)
       return { articleId: newArticle.id }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  @Post('/api/save')
+  @Redirect('/')
+  async getSaveArticle(
+    @Session() session: any,
+    @Req() req: express.Request,
+    @Res() res: express.Response
+  ) {
+    try {
+      // const article = await this.articleRepositry.findOne({
+      //   where: { id: req.body.id }
+      // })
+      // if (article === undefined) {
+      //   return console.log('error')
+      // }
+
+      // article.
+
+      // await this.articleRepositry.save(article)
+      await this.articleRepositry.update(req.body.articleId, {
+        title: req.body.title,
+        content: req.body.content,
+        category: req.body.category
+      })
     } catch (error) {
       console.log(error)
     }

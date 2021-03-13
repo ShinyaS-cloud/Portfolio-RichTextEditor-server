@@ -11,7 +11,7 @@ export class Article {
   @Column({ type: 'char', length: 100, nullable: true })
   title?: string
 
-  @Column({ type: 'char', length: 100, nullable: true })
+  @Column({ type: 'char', length: 200, nullable: true })
   imageUrl?: string
 
   @Column({ type: 'int', nullable: true })
@@ -21,7 +21,7 @@ export class Article {
   content?: JSON
 
   @Column({ type: 'int', nullable: true })
-  postsId?: number
+  usersId?: number
 
   @ManyToOne(() => Users, (users) => users.article, { cascade: true })
   @JoinColumn({ name: 'usersId' })
