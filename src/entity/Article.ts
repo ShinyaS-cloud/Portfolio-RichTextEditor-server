@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, OneToMany, JoinColumn, Column, ManyToOne } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  JoinColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn
+} from 'typeorm'
 
 import { Users } from './Users'
 import { Favorites } from './Favorites'
@@ -22,6 +31,12 @@ export class Article {
 
   @Column({ type: 'int', nullable: true })
   usersId?: number
+
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt!: Date
+
+  @UpdateDateColumn({ type: 'timestamp' })
+  updatedAt!: Date
 
   @ManyToOne(() => Users, (users) => users.article, { cascade: true })
   @JoinColumn({ name: 'usersId' })

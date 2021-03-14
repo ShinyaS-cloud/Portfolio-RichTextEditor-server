@@ -9,7 +9,7 @@ import session from 'express-session'
 import { useExpressServer } from 'routing-controllers'
 import bcrypt from 'bcrypt'
 import flash from 'connect-flash'
-
+import csrf from 'csurf'
 import Google from 'passport-google-oauth20'
 import { keys } from '../config/keys'
 import { Users } from './entity/Users'
@@ -22,11 +22,13 @@ const MysqlDBStore = require('express-mysql-session')(session)
 //   message?: string
 // }
 const app = express()
-
+const jwtSecret = 'secret123'
+const csrfProtection = csrf({ cookie: true })
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
+app.use(csrfProtection)
 
 createConnection()
   .then(async () => {
@@ -39,7 +41,7 @@ createConnection()
 
     app.use(
       session({
-        secret: 'falerjfaerargfaaerhgaejfafaafrega',
+        secret: jwtSecret,
         resave: false,
         saveUninitialized: false,
         store: store,
@@ -96,8 +98,8 @@ createConnection()
 
     app.use(passport.initialize())
     app.use(passport.session())
-
     app.use(flash())
+
     useExpressServer(app, {
       controllers: [UserController, PostController],
       authorizationChecker: async (action, roles: string[]) => {

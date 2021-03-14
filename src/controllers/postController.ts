@@ -3,31 +3,24 @@ import 'reflect-metadata'
 import {
   Get,
   JsonController,
-  Param,
   Post,
+  QueryParam,
   Redirect,
   Req,
   Res,
   Session,
   UseBefore
 } from 'routing-controllers'
-import jwt from 'express-jwt'
 import express from 'express'
-
+import csrf from 'csurf'
 import { getRepository } from 'typeorm'
 import { Article } from '../entity/Article'
 import { Users } from '../entity/Users'
-const categories = {
-  pet: { id: 0, name: 'pet' },
-  sports: { id: 1, name: 'sports' },
-  novel: { id: 2, name: 'novel' },
-  IT: { id: 3, name: 'IT' },
-  food: { id: 4, name: 'food' },
-  twitter: { id: 5, name: 'twitter' }
-}
 
-type CategoryTypes = keyof typeof categories
-const jwtSecret = 'secret123'
+const csrfProtection = csrf({ cookie: true })
+// const categories = ['pet', 'sports', 'novel', 'IT', 'food']
+
+// type CategoryTypes = keyof typeof categories
 
 @JsonController()
 export class PostController {
@@ -35,13 +28,25 @@ export class PostController {
   usersRepositry = getRepository(Users)
 
   /// paramsで指定されたカテゴリーのポストを返す
-  @Get('/api/post/:categoryName')
-  async getArticle(@Param('categoryName') param: CategoryTypes) {
+  @Get('/api/articleCategory')
+  async getArticles(@QueryParam('categoryName') param: number) {
     try {
-      const post = await this.articleRepositry.find({ where: { category: categories[param].id } })
-
+      let post
+      if (param === -1) {
+        post = await this.articleRepositry.find({ take: 10, order: { createdAt: 'DESC' } })
+      } else {
+        post = await this.articleRepositry.find({ where: { category: param } })
+      }
       const fetchPost = post.map((p) => {
-        return { articleId: p.id, title: p.title, imageUrl: p.imageUrl }
+        return {
+          articleId: p.id,
+          title: p.title,
+          imageUrl: p.imageUrl,
+          userId: p.usersId,
+          category: p.category,
+          createdAt: p.createdAt,
+          updatedAt: p.updatedAt
+        }
       })
 
       return fetchPost
@@ -50,10 +55,25 @@ export class PostController {
     }
   }
 
+  @Get('/article')
+  async getArticle(@QueryParam('articleId') param: number) {
+    const post = await this.articleRepositry.findOne({ where: { articleId: param } })
+    if (post === undefined) {
+      return
+    }
+    return {
+      articleId: post.id,
+      title: post.title,
+      imageUrl: post.imageUrl,
+      userId: post.usersId,
+      category: post.category,
+      createdAt: post.createdAt,
+      updatedAt: post.updatedAt
+    }
+  }
+
   @Get('/api/newpost')
-  @UseBefore(
-    jwt({ secret: jwtSecret, algorithms: ['HS256'], getToken: (req) => req.cookies.token })
-  )
+  @UseBefore(csrfProtection)
   @Redirect('/newpost/:articleId')
   async getNewPost(@Session() session: any) {
     try {
@@ -76,6 +96,7 @@ export class PostController {
   }
 
   @Post('/api/save')
+  @UseBefore(csrfProtection)
   @Redirect('/')
   async getSaveArticle(
     @Session() session: any,
@@ -83,20 +104,11 @@ export class PostController {
     @Res() res: express.Response
   ) {
     try {
-      // const article = await this.articleRepositry.findOne({
-      //   where: { id: req.body.id }
-      // })
-      // if (article === undefined) {
-      //   return console.log('error')
-      // }
-
-      // article.
-
-      // await this.articleRepositry.save(article)
-      await this.articleRepositry.update(req.body.articleId, {
-        title: req.body.title,
-        content: req.body.content,
-        category: req.body.category
+      const { data } = req.body
+      await this.articleRepositry.update(data.articleId, {
+        title: data.title,
+        content: data.content,
+        category: data.category
       })
     } catch (error) {
       console.log(error)
