@@ -1,11 +1,15 @@
 /* eslint-disable space-before-function-paren */
 import 'reflect-metadata'
-import { Get, JsonController, UseBefore, Redirect } from 'routing-controllers'
+import { Get, JsonController, UseBefore } from 'routing-controllers'
 import express from 'express'
-import jwt from 'jsonwebtoken'
+import csrf from 'csurf'
+import jsonwebtoken from 'jsonwebtoken'
+
 import passport from 'passport'
 
-const jwtSecret = 'alirghareglaernfa'
+const jwtSecret = 'secret123'
+
+const csrfProtection = csrf({ cookie: true })
 @JsonController()
 export class UserController {
   @Get('/auth/google')
@@ -13,12 +17,11 @@ export class UserController {
   getAuth() {}
 
   @Get('/auth/google/callback')
-  @UseBefore(passport.authenticate('google'), (res: express.Response) => {
-    const token = jwt.sign({ user: 'aewfjraeg' }, jwtSecret)
+  @UseBefore(passport.authenticate('google'), (req: express.Request, res: express.Response) => {
+    const token = jsonwebtoken.sign({ user: 'aewfjraeg' }, jwtSecret)
     res.cookie('token', token, { httpOnly: true })
-    res.json({ token })
+    res.redirect('/')
   })
-  @Redirect('/')
   getAuthCallback() {}
 
   @Get('/api/current_user')
@@ -28,15 +31,14 @@ export class UserController {
   getCurrentUser() {}
 
   @Get('/api/jwt')
-  @UseBefore((res: express.Response) => {
-    const token = jwt.sign({ user: 'aewfjraeg' }, jwtSecret)
+  @UseBefore((req: express.Request, res: express.Response) => {
+    const token = jsonwebtoken.sign({ user: 'aewfjraeg' }, jwtSecret)
     res.cookie('token', token, { httpOnly: true })
-    res.json({ token })
   })
   getJwt() {}
 
   @Get('/api/csrfToken')
-  @UseBefore((req: express.Request, res: express.Response) => {
+  @UseBefore(csrfProtection, (req: express.Request, res: express.Response) => {
     res.json({ csrfToken: req.csrfToken() })
   })
   getCsrfToken() {}

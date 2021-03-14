@@ -1,7 +1,17 @@
 /* eslint-disable space-before-function-paren */
 import 'reflect-metadata'
-import { Get, JsonController, Param, Post, Redirect, Req, Res, Session } from 'routing-controllers'
-
+import {
+  Get,
+  JsonController,
+  Param,
+  Post,
+  Redirect,
+  Req,
+  Res,
+  Session,
+  UseBefore
+} from 'routing-controllers'
+import jwt from 'express-jwt'
 import express from 'express'
 
 import { getRepository } from 'typeorm'
@@ -17,6 +27,8 @@ const categories = {
 }
 
 type CategoryTypes = keyof typeof categories
+const jwtSecret = 'secret123'
+
 @JsonController()
 export class PostController {
   articleRepositry = getRepository(Article)
@@ -39,6 +51,9 @@ export class PostController {
   }
 
   @Get('/api/newpost')
+  @UseBefore(
+    jwt({ secret: jwtSecret, algorithms: ['HS256'], getToken: (req) => req.cookies.token })
+  )
   @Redirect('/newpost/:articleId')
   async getNewPost(@Session() session: any) {
     try {
