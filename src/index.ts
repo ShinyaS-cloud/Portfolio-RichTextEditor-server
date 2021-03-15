@@ -4,10 +4,9 @@ import express from 'express'
 import path from 'path'
 import cookieParser from 'cookie-parser'
 import passport from 'passport'
-import { createConnection, getConnection, getManager, getRepository } from 'typeorm'
+import { createConnection, getConnection, getRepository } from 'typeorm'
 import session from 'express-session'
 import { useExpressServer } from 'routing-controllers'
-import bcrypt from 'bcrypt'
 import flash from 'connect-flash'
 import csrf from 'csurf'
 import Google from 'passport-google-oauth20'
@@ -35,7 +34,7 @@ createConnection()
     const ormConnection: any = getConnection().driver
     const store = new MysqlDBStore({}, ormConnection.pool)
     const userRepositry = getRepository(Users)
-    const EntityManager = getManager()
+    // const EntityManager = getManager()
 
     const GoogleStrategy = Google.Strategy
 
@@ -86,6 +85,7 @@ createConnection()
               const user = new Users()
               user.googleId = profile.id
               user.loginGoogle = true
+              user.name = '@emanon'
               await userRepositry.save(user)
               done(undefined, user)
             }
@@ -118,31 +118,31 @@ createConnection()
       }
     })
 
-    const userfind = async () => {
-      try {
-        return await userRepositry.findOne(1)
-      } catch (err) {
-        console.log('ERROR REPOSITRY')
-      }
-    }
+    // const userfind = async () => {
+    //   try {
+    //     return await userRepositry.findOne(1)
+    //   } catch (err) {
+    //     console.log('ERROR REPOSITRY')
+    //   }
+    // }
 
-    const userCreate = async (user: any) => {
-      try {
-        if (!user) {
-          const password = await bcrypt.hash('Max', 12)
-          const update = new Users()
-          update.password = password
-          update.email = 'test@test.com'
-          update.loginGoogle = false
-          await EntityManager.save(update)
-        }
-        return await userRepositry.findOne(1)
-      } catch (err) {
-        console.log(err)
-      }
-    }
-    const user = await userfind()
-    await userCreate(user)
+    // const userCreate = async (user: any) => {
+    //   try {
+    //     if (!user) {
+    //       const password = await bcrypt.hash('Max', 12)
+    //       const update = new Users()
+    //       update.password = password
+    //       update.email = 'test@test.com'
+    //       update.loginGoogle = false
+    //       await EntityManager.save(update)
+    //     }
+    //     return await userRepositry.findOne(1)
+    //   } catch (err) {
+    //     console.log(err)
+    //   }
+    // }
+    // const user = await userfind()
+    // await userCreate(user)
 
     // app.get('/', function (req, res) {
     //   console.log(1)

@@ -33,16 +33,24 @@ export class PostController {
     try {
       let post
       if (param === -1) {
-        post = await this.articleRepositry.find({ take: 10, order: { createdAt: 'DESC' } })
+        post = await this.articleRepositry.find({
+          relations: ['users'],
+          take: 10,
+          order: { createdAt: 'DESC' }
+        })
       } else {
-        post = await this.articleRepositry.find({ where: { category: param } })
+        post = await this.articleRepositry.find({
+          relations: ['users'],
+          where: { category: param }
+        })
       }
       const fetchPost = post.map((p) => {
         return {
           articleId: p.id,
           title: p.title,
           imageUrl: p.imageUrl,
-          userId: p.usersId,
+          userName: p.users?.name,
+          content: p.content,
           category: p.category,
           createdAt: p.createdAt,
           updatedAt: p.updatedAt
@@ -55,21 +63,23 @@ export class PostController {
     }
   }
 
-  @Get('/article')
-  async getArticle(@QueryParam('articleId') param: number) {
-    const post = await this.articleRepositry.findOne({ where: { articleId: param } })
+  @Get('/api/article')
+  async getArticle(@QueryParam('articleId') param: number, @Res() res: express.Response) {
+    const post = await this.articleRepositry.findOne(param, { relations: ['users'] })
     if (post === undefined) {
-      return
+      return '/'
     }
-    return {
+    res.json({
       articleId: post.id,
       title: post.title,
       imageUrl: post.imageUrl,
-      userId: post.usersId,
+      userName: post.users?.name,
+      content: post.content,
       category: post.category,
       createdAt: post.createdAt,
       updatedAt: post.updatedAt
-    }
+    })
+    return res
   }
 
   @Get('/api/newpost')

@@ -26,6 +26,9 @@ export class Article {
   @Column({ type: 'int', nullable: true })
   category?: number
 
+  @Column({ type: 'char', length: 200, nullable: true })
+  abstract?: string
+
   @Column({ type: 'json', nullable: true })
   content?: JSON
 

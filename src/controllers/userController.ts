@@ -22,14 +22,6 @@ export class UserController {
   })
   getCurrentUser() {}
 
-  // @Get('/api/jwt')
-  // @UseBefore((req: express.Request, res: express.Response) => {
-  //   const token = jsonwebtoken.sign({ user: 'aewfjraeg' }, jwtSecret)
-  //   res.cookie('token', token, { httpOnly: true })
-  //   res.redirect('/')
-  // })
-  // getJwt() {}
-
   @Get('/api/csrfToken')
   @UseBefore((req: express.Request, res: express.Response) => {
     res.json({ csrfToken: req.csrfToken() })
@@ -39,7 +31,6 @@ export class UserController {
   @Get('/api/logout')
   @UseBefore((req: express.Request, res: express.Response) => {
     req.logout()
-    // res.clearCookie('token')
     res.redirect('/')
   })
   getLogout() {}
