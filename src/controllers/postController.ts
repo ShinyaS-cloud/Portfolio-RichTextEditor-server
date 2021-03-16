@@ -47,17 +47,9 @@ export class PostController {
         })
       }
       const fetchPost = post.map((p) => {
-        return {
-          articleId: p.id,
-          title: p.title,
-          imageUrl: p.imageUrl,
-          userName: p.users?.name,
-          abstract: p.abstract,
-          content: p.content,
-          category: p.category,
-          createdAt: p.createdAt,
-          updatedAt: p.updatedAt
-        }
+        const returnArticle = { ...p, users: p.users }
+        delete returnArticle.content
+        return { ...returnArticle }
       })
 
       return fetchPost
@@ -70,21 +62,14 @@ export class PostController {
    * 選択された一つのArticleを返すAPI
    */
   @Get('/api/article')
-  async getArticle(@QueryParam('articleId') param: number, @Res() res: express.Response) {
-    const post = await this.articleRepositry.findOne(param, { relations: ['users'] })
-    if (post === undefined || post.users === undefined) {
+  async getArticle(@QueryParam('id') param: number, @Res() res: express.Response) {
+    const article = await this.articleRepositry.findOne(param, { relations: ['users'] })
+    if (article === undefined || article.users === undefined) {
       return '/'
     }
+    const returnArticle = { ...article, users: article.users }
     res.json({
-      articleId: post.id,
-      title: post.title,
-      imageUrl: post.imageUrl,
-      abstract: post.abstract,
-      userName: post.users.name,
-      content: post.content,
-      category: post.category,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt
+      ...returnArticle
     })
     return res
   }
