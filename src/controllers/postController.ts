@@ -18,16 +18,18 @@ import { Article } from '../entity/Article'
 import { Users } from '../entity/Users'
 
 const csrfProtection = csrf({ cookie: true })
-// const categories = ['pet', 'sports', 'novel', 'IT', 'food']
 
-// type CategoryTypes = keyof typeof categories
-
+/**
+ * Contoroller
+ */
 @JsonController()
 export class PostController {
   articleRepositry = getRepository(Article)
   usersRepositry = getRepository(Users)
 
-  /// paramsで指定されたカテゴリーのポストを返す
+  /**
+   *  paramsで指定されたカテゴリーのポストを返すAPI
+   */
   @Get('/api/articleCategory')
   async getArticles(@QueryParam('categoryName') param: number) {
     try {
@@ -50,6 +52,7 @@ export class PostController {
           title: p.title,
           imageUrl: p.imageUrl,
           userName: p.users?.name,
+          abstract: p.abstract,
           content: p.content,
           category: p.category,
           createdAt: p.createdAt,
@@ -63,17 +66,21 @@ export class PostController {
     }
   }
 
+  /**
+   * 選択された一つのArticleを返すAPI
+   */
   @Get('/api/article')
   async getArticle(@QueryParam('articleId') param: number, @Res() res: express.Response) {
     const post = await this.articleRepositry.findOne(param, { relations: ['users'] })
-    if (post === undefined) {
+    if (post === undefined || post.users === undefined) {
       return '/'
     }
     res.json({
       articleId: post.id,
       title: post.title,
       imageUrl: post.imageUrl,
-      userName: post.users?.name,
+      abstract: post.abstract,
+      userName: post.users.name,
       content: post.content,
       category: post.category,
       createdAt: post.createdAt,
@@ -82,6 +89,9 @@ export class PostController {
     return res
   }
 
+  /**
+   *新しいArticleを作成するAPI
+   */
   @Get('/api/newpost')
   @UseBefore(csrfProtection)
   @Redirect('/newpost/:articleId')
@@ -105,6 +115,9 @@ export class PostController {
     }
   }
 
+  /**
+   * 編集されたArticleを保存する
+   */
   @Post('/api/save')
   @UseBefore(csrfProtection)
   @Redirect('/')

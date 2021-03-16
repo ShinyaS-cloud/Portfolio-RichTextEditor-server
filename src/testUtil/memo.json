@@ -1,0 +1,171 @@
+{
+  "blocks": [
+    {
+      "key": "6gjk6",
+      "data": {},
+      "text": "これはテストです",
+      "type": "header-one",
+      "depth": 0,
+      "entityRanges": [],
+      "inlineStyleRanges": []
+    },
+    {
+      "key": "ba85j",
+      "data": {},
+      "text": "",
+      "type": "header-one",
+      "depth": 0,
+      "entityRanges": [],
+      "inlineStyleRanges": []
+    },
+    {
+      "key": "76e8c",
+      "data": {},
+      "text": "実際に色々書いてますこれは太文字",
+      "type": "unstyled",
+      "depth": 0,
+      "entityRanges": [],
+      "inlineStyleRanges": [{ "style": "BOLD", "length": 16, "offset": 0 }]
+    },
+    {
+      "key": "fjg6d",
+      "data": {},
+      "text": "",
+      "type": "unstyled",
+      "depth": 0,
+      "entityRanges": [],
+      "inlineStyleRanges": []
+    },
+    {
+      "key": "24sm3",
+      "data": {},
+      "text": "",
+      "type": "unstyled",
+      "depth": 0,
+      "entityRanges": [],
+      "inlineStyleRanges": []
+    },
+    {
+      "key": "amtt4",
+      "data": {},
+      "text": "真ん中に書いたりしています",
+      "type": "center",
+      "depth": 0,
+      "entityRanges": [],
+      "inlineStyleRanges": []
+    },
+    {
+      "key": "86frt",
+      "data": {},
+      "text": "ツギはみぎ",
+      "type": "right",
+      "depth": 0,
+      "entityRanges": [],
+      "inlineStyleRanges": []
+    },
+    {
+      "key": "8n29g",
+      "data": {},
+      "text": "最後に左",
+      "type": "left",
+      "depth": 0,
+      "entityRanges": [],
+      "inlineStyleRanges": []
+    },
+    {
+      "key": "c1ioe",
+      "data": {},
+      "text": "",
+      "type": "left",
+      "depth": 0,
+      "entityRanges": [],
+      "inlineStyleRanges": []
+    },
+    {
+      "key": "86i7o",
+      "data": {},
+      "text": "これは箇条書きです",
+      "type": "unordered-list-item",
+      "depth": 0,
+      "entityRanges": [],
+      "inlineStyleRanges": []
+    },
+    {
+      "key": "ffkqu",
+      "data": {},
+      "text": "これもです",
+      "type": "unordered-list-item",
+      "depth": 0,
+      "entityRanges": [],
+      "inlineStyleRanges": []
+    },
+    {
+      "key": "djfc3",
+      "data": {},
+      "text": "これは数字の箇条書きです",
+      "type": "ordered-list-item",
+      "depth": 0,
+      "entityRanges": [],
+      "inlineStyleRanges": []
+    },
+    {
+      "key": "2nqai",
+      "data": {},
+      "text": "これは二番目です",
+      "type": "ordered-list-item",
+      "depth": 0,
+      "entityRanges": [],
+      "inlineStyleRanges": []
+    },
+    {
+      "key": "ads7h",
+      "data": {},
+      "text": "取り消し線もかけます",
+      "type": "unstyled",
+      "depth": 0,
+      "entityRanges": [],
+      "inlineStyleRanges": [{ "style": "STRIKETHROUGH", "length": 10, "offset": 0 }]
+    },
+    {
+      "key": "6acj0",
+      "data": {},
+      "text": "",
+      "type": "unstyled",
+      "depth": 0,
+      "entityRanges": [],
+      "inlineStyleRanges": []
+    },
+    {
+      "key": "ebuvv",
+      "data": {},
+      "text": "アンダーラインもです",
+      "type": "unstyled",
+      "depth": 0,
+      "entityRanges": [],
+      "inlineStyleRanges": [{ "style": "UNDERLINE", "length": 10, "offset": 0 }]
+    },
+    {
+      "key": "4ok5e",
+      "data": {},
+      "text": "",
+      "type": "unstyled",
+      "depth": 0,
+      "entityRanges": [],
+      "inlineStyleRanges": []
+    },
+    {
+      "key": "6l00t",
+      "data": {},
+      "text": "赤青黄色",
+      "type": "unstyled",
+      "depth": 0,
+      "entityRanges": [],
+      "inlineStyleRanges": [
+        { "style": "red", "length": 1, "offset": 0 },
+        { "style": "blue", "length": 1, "offset": 1 },
+        { "style": "yellow", "length": 2, "offset": 2 }
+      ]
+    }
+  ],
+  "entityMap": {}
+}
