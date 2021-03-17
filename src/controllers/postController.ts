@@ -37,7 +37,7 @@ export class PostController {
       if (param === -1) {
         post = await this.articleRepositry.find({
           relations: ['users'],
-          take: 10,
+          take: 12,
           order: { createdAt: 'DESC' }
         })
       } else {
@@ -67,7 +67,8 @@ export class PostController {
     if (article === undefined || article.users === undefined) {
       return '/'
     }
-    const returnArticle = { ...article, users: article.users }
+
+    const returnArticle = { ...article, users: { id: article.users.id, name: article.users.name } }
     res.json({
       ...returnArticle
     })

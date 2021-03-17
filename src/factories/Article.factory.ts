@@ -12,24 +12,74 @@ define(Article, (faker: typeof Faker) => {
   article.title = faker.name.title()
   article.abstract = faker.lorem.sentence(10)
 
-  const varArray = [...Array(100)].fill({
-    key: '',
-    data: {},
-    text: '',
-    type: 'unstyled',
-    depth: 0,
-    entityRanges: [],
-    inlineStyleRanges: []
-  })
+  const varArray = [...Array(100)].fill(undefined)
 
-  const fakerArray = varArray.map((v) => {
-    v.key = faker.random.alphaNumeric(5).toLowerCase()
-    v.text = faker.lorem.sentence(9)
-    v.inlineStyleRanges = []
-    return v
-  })
+  const types = [
+    'unstyled',
+    'header-one',
+    'header-two',
+    'header-three',
+    'header-four',
+    'header-five',
+    'header-six',
+    'blockquote',
+    'code-block',
+    'unordered-list-item',
+    'ordered-list-item',
+    'left',
+    'center',
+    'right'
+  ]
 
-  article.content = JSON.parse('{ blocks: ' + `${fakerArray}` + ', entityMap: {} }')
+  const inlineStyle = [
+    'BOLD',
+    'CODE',
+    'ITALIC',
+    'STRIKETHROUGH',
+    'UNDERLINE',
+    'red',
+    'orange',
+    'yellow',
+    'green',
+    'blue',
+    'indigo',
+    'violet'
+  ]
+
+  const textGenerator = () => {
+    const sentence = faker.lorem.sentence(9)
+    const lengths = faker.random.number(sentence.length)
+    const offset = faker.random.number(sentence.length - lengths)
+    return {
+      key: faker.random.alphaNumeric(5).toLowerCase(),
+      data: {},
+      text: sentence,
+      type: faker.random.arrayElement(types),
+      depth: 0,
+      entityRanges: [],
+      inlineStyleRanges: [
+        { style: faker.random.arrayElement(inlineStyle), length: lengths, offset: offset }
+      ]
+    }
+  }
+
+  const fakerArray = varArray.map(textGenerator)
+
+  // const fakerArray = varArray.map((v) => {
+  //   const sentence = faker.lorem.sentence(9)
+  //   const lengths = faker.random.number(sentence.length)
+  //   const offset = faker.random.number(sentence.length - lengths)
+  //   v.key = faker.random.alphaNumeric(5).toLowerCase()
+  //   v.text = sentence
+  //   v.type = faker.random.arrayElement(types)
+  //   v.inlineStyleRanges = [
+  //     { style: faker.random.arrayElement(inlineStyle), length: lengths, offset: offset }
+  //   ]
+  //   return v
+  // })
+
+  const jsonString = '{ "blocks": ' + JSON.stringify(fakerArray) + ', "entityMap": {} }'
+  article.content = JSON.parse(jsonString)
 
   return article
 })
