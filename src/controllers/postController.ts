@@ -16,6 +16,7 @@ import csrf from 'csurf'
 import { getRepository } from 'typeorm'
 import { Article } from '../entity/Article'
 import { Users } from '../entity/Users'
+import { Favorites } from '../entity/Favorites'
 
 const csrfProtection = csrf({ cookie: true })
 
@@ -26,6 +27,7 @@ const csrfProtection = csrf({ cookie: true })
 export class PostController {
   articleRepositry = getRepository(Article)
   usersRepositry = getRepository(Users)
+  favoritesRepositry = getRepository(Favorites)
 
   /**
    *  paramsで指定されたカテゴリーのポストを返すAPI
@@ -43,6 +45,8 @@ export class PostController {
       } else {
         post = await this.articleRepositry.find({
           relations: ['users'],
+          take: 12,
+          order: { createdAt: 'DESC' },
           where: { category: param }
         })
       }
@@ -107,10 +111,27 @@ export class PostController {
   @Post('/api/save')
   @UseBefore(csrfProtection)
   @Redirect('/')
-  async getSaveArticle(
+  async postSaveArticle(
     @Session() session: any,
     @Req() req: express.Request,
     @Res() res: express.Response
+  ) {
+    try {
+      const { data } = req.body
+      await this.articleRepositry.update(data.articleId, {
+        title: data.title,
+        content: data.content,
+        category: data.category
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  @Post('/api/favorite')
+  @UseBefore(csrfProtection)
+  async postFavorite(
+    @QueryParam('categoryName') param: number
   ) {
     try {
       const { data } = req.body
