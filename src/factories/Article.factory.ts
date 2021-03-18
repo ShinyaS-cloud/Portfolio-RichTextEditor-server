@@ -3,6 +3,8 @@ import * as Faker from 'faker/locale/ja'
 import { define } from 'typeorm-seeding'
 import { Article } from '../entity/Article'
 
+import natsumeArray from '../testUtil/natsume'
+
 define(Article, (faker: typeof Faker) => {
   const article = new Article()
   // const seed = faker.random.number(1000)
@@ -47,7 +49,7 @@ define(Article, (faker: typeof Faker) => {
   ]
 
   const textGenerator = () => {
-    const sentence = faker.lorem.sentence(9)
+    const sentence = faker.random.arrayElement(natsumeArray)
     const lengths = faker.random.number(sentence.length)
     const offset = faker.random.number(sentence.length - lengths)
     return {
@@ -64,19 +66,6 @@ define(Article, (faker: typeof Faker) => {
   }
 
   const fakerArray = varArray.map(textGenerator)
-
-  // const fakerArray = varArray.map((v) => {
-  //   const sentence = faker.lorem.sentence(9)
-  //   const lengths = faker.random.number(sentence.length)
-  //   const offset = faker.random.number(sentence.length - lengths)
-  //   v.key = faker.random.alphaNumeric(5).toLowerCase()
-  //   v.text = sentence
-  //   v.type = faker.random.arrayElement(types)
-  //   v.inlineStyleRanges = [
-  //     { style: faker.random.arrayElement(inlineStyle), length: lengths, offset: offset }
-  //   ]
-  //   return v
-  // })
 
   const jsonString = '{ "blocks": ' + JSON.stringify(fakerArray) + ', "entityMap": {} }'
   article.content = JSON.parse(jsonString)

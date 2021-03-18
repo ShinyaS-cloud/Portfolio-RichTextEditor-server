@@ -8,13 +8,13 @@ export class Favorites {
   id?: number
 
   @Column({ type: 'int', nullable: false })
-  userId!: number
+  usersId!: number
 
   @Column({ type: 'int', nullable: true })
   articleId!: number
 
   @ManyToOne(() => Users, (users) => users.favorites, { cascade: true })
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: 'usersId' })
   users?: Users
 
   @ManyToOne(() => Article, (article) => article.favorites, { cascade: true })

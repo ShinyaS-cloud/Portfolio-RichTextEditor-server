@@ -5,6 +5,7 @@ import {
   JsonController,
   Post,
   QueryParam,
+  QueryParams,
   Redirect,
   Req,
   Res,
@@ -23,8 +24,13 @@ const csrfProtection = csrf({ cookie: true })
 /**
  * Contoroller
  */
+class GetUsersCategoryQuery {
+  categoryNumber!: number
+  usersId!: number
+}
+
 @JsonController()
-export class PostController {
+export class ArticleController {
   articleRepositry = getRepository(Article)
   usersRepositry = getRepository(Users)
   favoritesRepositry = getRepository(Favorites)
@@ -33,29 +39,34 @@ export class PostController {
    *  paramsで指定されたカテゴリーのポストを返すAPI
    */
   @Get('/api/articleCategory')
-  async getArticles(@QueryParam('categoryName') param: number) {
+  async getArticleList(@QueryParams() param: GetUsersCategoryQuery) {
     try {
       let post
-      if (param === -1) {
+      if (param.categoryNumber === -1) {
         post = await this.articleRepositry.find({
-          relations: ['users'],
+          relations: ['users', 'favorites'],
           take: 12,
           order: { createdAt: 'DESC' }
         })
       } else {
         post = await this.articleRepositry.find({
-          relations: ['users'],
+          relations: ['users', 'favorites'],
           take: 12,
           order: { createdAt: 'DESC' },
-          where: { category: param }
+          where: { category: param.categoryNumber }
         })
       }
       const fetchPost = post.map((p) => {
         const returnArticle = { ...p, users: p.users }
+        let isFavorite = false
+        if (p.favorites !== undefined && param.usersId !== 0) {
+          const favoriteUser = p.favorites.filter((f) => f.usersId === param.usersId)
+          isFavorite = favoriteUser !== []
+          delete returnArticle.favorites
+        }
         delete returnArticle.content
-        return { ...returnArticle }
+        return { ...returnArticle, isFavorite }
       })
-
       return fetchPost
     } catch (error) {
       console.log(error)
@@ -128,18 +139,19 @@ export class PostController {
     }
   }
 
+  /**
+   * いいねボタンを押す
+   */
+
   @Post('/api/favorite')
   @UseBefore(csrfProtection)
-  async postFavorite(
-    @QueryParam('categoryName') param: number
-  ) {
+  async postFavorite(@Req() req: express.Request, @Res() res: express.Response) {
     try {
-      const { data } = req.body
-      await this.articleRepositry.update(data.articleId, {
-        title: data.title,
-        content: data.content,
-        category: data.category
-      })
+      const favorite = new Favorites()
+      favorite.usersId = req.body.usersId
+      favorite.articleId = req.body.articleId
+      await this.favoritesRepositry.save(favorite)
+      return res.sendStatus(200)
     } catch (error) {
       console.log(error)
     }

@@ -13,7 +13,7 @@ import Google from 'passport-google-oauth20'
 import { keys } from '../config/keys'
 import { Users } from './entity/Users'
 import { UserController } from './controllers/userController'
-import { PostController } from './controllers/postController'
+import { ArticleController } from './controllers/articleController'
 const MysqlDBStore = require('express-mysql-session')(session)
 
 // interface Error {
@@ -101,7 +101,7 @@ createConnection()
     app.use(flash())
 
     useExpressServer(app, {
-      controllers: [UserController, PostController],
+      controllers: [UserController, ArticleController],
       authorizationChecker: async (action, roles: string[]) => {
         action.response.locals.isAuthenticated = action.request.session.isLoggedIn
         action.response.locals.csrfToken = action.request.csrfToken()
