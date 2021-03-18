@@ -59,9 +59,9 @@ export class ArticleController {
       const fetchPost = post.map((p) => {
         const returnArticle = { ...p, users: p.users }
         let isFavorite = false
-        if (p.favorites !== undefined && param.usersId !== 0) {
-          const favoriteUser = p.favorites.filter((f) => f.usersId === param.usersId)
-          isFavorite = favoriteUser !== []
+        if (p.favorites !== [] && p.favorites !== undefined && param.usersId !== 0) {
+          const favoriteUser = p.favorites.filter((f) => +f.usersId === +param.usersId)
+          isFavorite = Boolean(favoriteUser.length)
           delete returnArticle.favorites
         }
         delete returnArticle.content
@@ -147,11 +147,21 @@ export class ArticleController {
   @UseBefore(csrfProtection)
   async postFavorite(@Req() req: express.Request, @Res() res: express.Response) {
     try {
-      const favorite = new Favorites()
-      favorite.usersId = req.body.usersId
-      favorite.articleId = req.body.articleId
-      await this.favoritesRepositry.save(favorite)
-      return res.sendStatus(200)
+      const prevFavorite = await this.favoritesRepositry.find({
+        where: { usersId: req.body.usersId, articleId: req.body.articleId }
+      })
+      let isFavorite
+      if (prevFavorite.length) {
+        await this.favoritesRepositry.delete(prevFavorite[0])
+        isFavorite = Boolean(prevFavorite.length - 1)
+      } else {
+        const favorite = new Favorites()
+        favorite.usersId = req.body.usersId
+        favorite.articleId = req.body.articleId
+        await this.favoritesRepositry.save(favorite)
+        isFavorite = true
+      }
+      return { isFavorite }
     } catch (error) {
       console.log(error)
     }
