@@ -9,7 +9,7 @@ export class Users {
   id?: number
 
   @Column({ type: 'char', length: 30, nullable: false })
-  name!: string
+  codename!: string
 
   @Column({ type: 'char', length: 200, nullable: true })
   password?: string

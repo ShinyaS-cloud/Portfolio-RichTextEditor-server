@@ -39,7 +39,7 @@ export class ArticleController {
    *  paramsで指定されたカテゴリーのポストを返すAPI
    */
   @Get('/api/articleCategory')
-  async getArticleList(@QueryParams() param: GetUsersCategoryQuery) {
+  async getArticleListCategory(@QueryParams() param: GetUsersCategoryQuery) {
     try {
       let post
       if (param.categoryNumber === -1) {
@@ -74,6 +74,29 @@ export class ArticleController {
   }
 
   /**
+   *  paramsで指定されたuserのarticleを返すAPI
+   */
+  @Get('/api/articleUser')
+  async getArticleListUser(@QueryParam('usersId') usersId: number) {
+    try {
+      const post = await this.articleRepositry.find({
+        relations: ['users', 'favorites'],
+        order: { createdAt: 'DESC' },
+        where: { usersId }
+      })
+
+      const fetchPost = post.map((p) => {
+        const returnArticle = { ...p, users: p.users }
+        delete returnArticle.content
+        return { ...returnArticle, isFavorite: false }
+      })
+      return fetchPost
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  /**
    * 選択された一つのArticleを返すAPI
    */
   @Get('/api/article')
@@ -83,7 +106,10 @@ export class ArticleController {
       return '/'
     }
 
-    const returnArticle = { ...article, users: { id: article.users.id, name: article.users.name } }
+    const returnArticle = {
+      ...article,
+      users: { id: article.users.id, codename: article.users.codename }
+    }
     res.json({
       ...returnArticle
     })

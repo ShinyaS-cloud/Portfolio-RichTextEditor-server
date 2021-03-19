@@ -7,7 +7,7 @@ define(Users, (faker: typeof Faker) => {
   const user = new Users()
   const password = faker.random.word()
 
-  user.name = faker.name.firstName().toLowerCase()
+  user.codename = faker.name.firstName().toLowerCase()
   user.email = faker.internet.email()
   user.password = bcrypt.hashSync(password, 12)
   user.loginGoogle = false

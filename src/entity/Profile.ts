@@ -12,11 +12,14 @@ export class Profile {
   @Column({ type: 'char', length: 200, nullable: true })
   introduction?: string
 
+  @Column({ type: 'char', length: 200, nullable: true })
+  avatarUrl?: string
+
+  @Column({ type: 'char', length: 200, nullable: true })
+  headerUrl?: string
+
   @Column({ type: 'int', nullable: true })
   usersId?: number
-
-  @Column({ type: 'date', nullable: true })
-  birthDay?: Date
 
   @OneToOne(() => Users, (users) => users.profile)
   @JoinColumn({ name: 'usersId' })

@@ -85,7 +85,7 @@ createConnection()
               const user = new Users()
               user.googleId = profile.id
               user.loginGoogle = true
-              user.name = '@emanon'
+              user.codename = '@emanon'
               await userRepositry.save(user)
               done(undefined, user)
             }
