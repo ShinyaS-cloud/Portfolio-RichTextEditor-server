@@ -5,13 +5,13 @@ import express from 'express'
 
 import passport from 'passport'
 import { getRepository } from 'typeorm'
-import { Users } from '../entity/Users'
-import { Profile } from '../entity/Profile'
+import { AuthUser } from '../entity/AuthUser'
+import { User } from '../entity/User'
 
 @JsonController()
 export class UserController {
-  usersRepositry = getRepository(Users)
-  profileRepositry = getRepository(Profile)
+  authUserRepositry = getRepository(AuthUser)
+  userRepositry = getRepository(User)
 
   @Get('/auth/google')
   @UseBefore(passport.authenticate('google', { scope: ['profile', 'email'] }))
@@ -44,18 +44,10 @@ export class UserController {
   @Get('/api/profile')
   async getProfile(@QueryParam('codename') codename: string, @Res() res: express.Response) {
     try {
-      // const profile = await this.profileRepositry.findOne({
-      //   relations: ['users'],
-      //   where: { users_codename: codename }
-      // })
-      const user = await this.usersRepositry.findOne({
-        relations: ['profile'],
+      const user = await this.userRepositry.findOne({
         where: { codename }
       })
-      const profile = user?.profile
-      const returnProfile = { ...profile, users: { codename } }
-
-      res.json(returnProfile)
+      res.json(user)
       return res
     } catch (error) {
       console.log(error)

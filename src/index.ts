@@ -11,7 +11,7 @@ import flash from 'connect-flash'
 import csrf from 'csurf'
 import Google from 'passport-google-oauth20'
 import { keys } from '../config/keys'
-import { Users } from './entity/Users'
+import { AuthUser } from './entity/AuthUser'
 import { UserController } from './controllers/userController'
 import { ArticleController } from './controllers/articleController'
 const MysqlDBStore = require('express-mysql-session')(session)
@@ -33,7 +33,7 @@ createConnection()
   .then(async () => {
     const ormConnection: any = getConnection().driver
     const store = new MysqlDBStore({}, ormConnection.pool)
-    const userRepositry = getRepository(Users)
+    const userRepositry = getRepository(AuthUser)
     // const EntityManager = getManager()
 
     const GoogleStrategy = Google.Strategy
@@ -56,7 +56,7 @@ createConnection()
     })
 
     // ユニークユーザー識別子からユーザーデータを取り出す
-    passport.deserializeUser(async (serializeUser: Users, done) => {
+    passport.deserializeUser(async (serializeUser: AuthUser, done) => {
       try {
         const user = await userRepositry.findOne({ where: { id: serializeUser.id } })
         done(null, user)
@@ -82,10 +82,9 @@ createConnection()
               done(undefined, existingUser)
             } else {
               console.log('We dont have a recode with this ID,make a new record!')
-              const user = new Users()
+              const user = new AuthUser()
               user.googleId = profile.id
               user.loginGoogle = true
-              user.codename = '@emanon'
               await userRepositry.save(user)
               done(undefined, user)
             }

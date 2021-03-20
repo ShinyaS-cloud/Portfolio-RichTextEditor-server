@@ -2,17 +2,20 @@
 import { Article } from '../entity/Article'
 import { Connection } from 'typeorm'
 import { Factory, Seeder } from 'typeorm-seeding'
-import { Users } from '../entity/Users'
-import { Profile } from '../entity/Profile'
+import { AuthUser } from '../entity/AuthUser'
+import { User } from '../entity/User'
+import { Favorites } from '../entity/Favorites'
 
-export default class CreateUsers implements Seeder {
+export default class CreateUser implements Seeder {
   public async run(factory: Factory, connection: Connection) {
-    await factory(Users)()
-      .map(async (user: Users) => {
+    await factory(User)()
+      .map(async (user: User) => {
         const articles: Article[] = await factory(Article)().createMany(10)
-        const profile: Profile = await factory(Profile)().create()
+        const authUser: AuthUser = await factory(AuthUser)().create()
+        const favorites: Favorites[] = await factory(Favorites)().createMany(15)
         user.article = articles
-        user.profile = profile
+        user.authUser = authUser
+        user.favorites = favorites
         return user
       })
       .createMany(10)

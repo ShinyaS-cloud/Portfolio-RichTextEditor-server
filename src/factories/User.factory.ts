@@ -1,17 +1,18 @@
 import * as Faker from 'faker/locale/ja'
 import { define } from 'typeorm-seeding'
 
-import { Profile } from '../entity/Profile'
+import { User } from '../entity/User'
 
-define(Profile, (faker: typeof Faker) => {
-  const profile = new Profile()
-  profile.name = faker.name.findName()
-  profile.introduction = faker.random.words(5)
-  profile.avatarUrl = faker.random.arrayElement(avatars)
+define(User, (faker: typeof Faker) => {
+  const user = new User()
+  user.name = faker.name.findName()
+  user.codename = faker.name.firstName().toLowerCase()
+  user.introduction = faker.random.words(5)
+  user.avatarUrl = faker.random.arrayElement(avatars)
   const seed = faker.random.number(1000)
   const mockImages = 'https://picsum.photos/id/' + seed + '/200/300.jpg'
-  profile.headerUrl = mockImages
-  return profile
+  user.headerUrl = mockImages
+  return user
 })
 
 const avatars = [
