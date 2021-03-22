@@ -63,23 +63,21 @@ export class UserController {
   }
 
   @Post('/api/login')
-  @UseBefore(
-    (req: express.Request, res: express.Response, next: express.NextFunction) => {
-      passport.authenticate('local', (err, user, info) => {
+  @UseBefore((req: express.Request, res: express.Response, next: express.NextFunction) => {
+    passport.authenticate('local', (err, user, info) => {
+      if (err) {
+        return next(err)
+      }
+      if (!user) {
+        return res.send(info)
+      }
+      req.logIn(user, (err) => {
         if (err) {
           return next(err)
         }
-        if (!user) {
-          res.json({ error: true })
-        }
-        req.logIn(user, function (err) {
-          if (err) {
-            return next(err)
-          }
-          res.send(req.user)
-        })
-      })(req, res, next)
-    }
-  )
+        return res.send(req.user)
+      })
+    })(req, res, next)
+  })
   getAuth() {}
 }

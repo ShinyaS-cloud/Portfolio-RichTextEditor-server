@@ -189,6 +189,9 @@ export class ArticleController {
   @UseBefore(csrfProtection)
   async postFavorite(@Req() req: express.Request, @Res() res: express.Response) {
     try {
+      if (+req.body.userId === 0) {
+        return res.send(false)
+      }
       const prevFavorite = await this.favoritesRepositry.find({
         where: { userId: req.body.userId, articleId: req.body.articleId }
       })
