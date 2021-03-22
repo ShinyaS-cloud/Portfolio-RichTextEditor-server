@@ -1,6 +1,14 @@
 /* eslint-disable space-before-function-paren */
 import 'reflect-metadata'
-import { Get, JsonController, QueryParam, Redirect, Res, UseBefore } from 'routing-controllers'
+import {
+  Get,
+  JsonController,
+  Post,
+  QueryParam,
+  Redirect,
+  Res,
+  UseBefore
+} from 'routing-controllers'
 import express from 'express'
 
 import passport from 'passport'
@@ -15,12 +23,12 @@ export class UserController {
 
   @Get('/auth/google')
   @UseBefore(passport.authenticate('google', { scope: ['profile', 'email'] }))
-  getAuth() {}
+  getAuthGoogle() {}
 
   @Get('/auth/google/callback')
   @UseBefore(passport.authenticate('google'))
   @Redirect('/')
-  getAuthCallback() {}
+  getAuthGoogleCallback() {}
 
   @Get('/api/current_user')
   @UseBefore((req: express.Request, res: express.Response) => {
@@ -53,4 +61,25 @@ export class UserController {
       console.log(error)
     }
   }
+
+  @Post('/api/login')
+  @UseBefore(
+    (req: express.Request, res: express.Response, next: express.NextFunction) => {
+      passport.authenticate('local', (err, user, info) => {
+        if (err) {
+          return next(err)
+        }
+        if (!user) {
+          res.json({ error: true })
+        }
+        req.logIn(user, function (err) {
+          if (err) {
+            return next(err)
+          }
+          res.send(req.user)
+        })
+      })(req, res, next)
+    }
+  )
+  getAuth() {}
 }

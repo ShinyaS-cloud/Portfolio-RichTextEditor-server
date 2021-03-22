@@ -2,13 +2,19 @@ import * as Faker from 'faker/locale/ja'
 import { define } from 'typeorm-seeding'
 import { AuthUser } from '../entity/AuthUser'
 import bcrypt from 'bcrypt'
+import fs from 'fs'
 
 define(AuthUser, (faker: typeof Faker) => {
-  const user = new AuthUser()
+  const authUser = new AuthUser()
   const password = faker.random.word()
+  fs.appendFile('password.txt', password + '/n', (error) => {
+    if (error) {
+      throw error
+    }
+  })
 
-  user.email = faker.internet.email()
-  user.password = bcrypt.hashSync(password, 12)
-  user.loginGoogle = false
-  return user
+  authUser.email = faker.internet.email()
+  authUser.password = bcrypt.hashSync(password, 12)
+  authUser.loginGoogle = false
+  return authUser
 })

@@ -9,7 +9,9 @@ import session from 'express-session'
 import { useExpressServer } from 'routing-controllers'
 import flash from 'connect-flash'
 import csrf from 'csurf'
+import bcrypt from 'bcrypt'
 import Google from 'passport-google-oauth20'
+import Local from 'passport-local'
 import { keys } from '../config/keys'
 import { AuthUser } from './entity/AuthUser'
 import { UserController } from './controllers/userController'
@@ -21,11 +23,12 @@ const MysqlDBStore = require('express-mysql-session')(session)
 //   message?: string
 // }
 const app = express()
-const jwtSecret = 'secret123'
+const secret = 'fherafhukfsrhgbnsgukrvbkakrekgfk'
 const csrfProtection = csrf({ cookie: true })
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
+
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(csrfProtection)
 
@@ -33,14 +36,15 @@ createConnection()
   .then(async () => {
     const ormConnection: any = getConnection().driver
     const store = new MysqlDBStore({}, ormConnection.pool)
-    const userRepositry = getRepository(AuthUser)
+    const authUserRepositry = getRepository(AuthUser)
     // const EntityManager = getManager()
 
     const GoogleStrategy = Google.Strategy
+    const LocalStrategy = Local.Strategy
 
     app.use(
       session({
-        secret: jwtSecret,
+        secret: secret,
         resave: false,
         saveUninitialized: false,
         store: store,
@@ -49,6 +53,7 @@ createConnection()
         }
       })
     )
+
     // passportとセッションの紐づけ
     // ユーザーデータからユニークユーザー識別子を取り出す
     passport.serializeUser((user, done) => {
@@ -58,7 +63,7 @@ createConnection()
     // ユニークユーザー識別子からユーザーデータを取り出す
     passport.deserializeUser(async (serializeUser: AuthUser, done) => {
       try {
-        const user = await userRepositry.findOne({ where: { id: serializeUser.id } })
+        const user = await authUserRepositry.findOne({ where: { id: serializeUser.id } })
         done(null, user)
       } catch (error) {
         console.log(error)
@@ -76,20 +81,43 @@ createConnection()
         },
         async (accessToken, refreshToken, profile, done) => {
           try {
-            const existingUser = await userRepositry.findOne({ where: { googleId: profile.id } })
+            const existingUser = await authUserRepositry.findOne({
+              where: { googleId: profile.id }
+            })
             if (existingUser !== undefined) {
               console.log('we already have a record with the given profile ID')
-              done(undefined, existingUser)
+              return done(undefined, existingUser)
             } else {
               console.log('We dont have a recode with this ID,make a new record!')
               const user = new AuthUser()
               user.googleId = profile.id
               user.loginGoogle = true
-              await userRepositry.save(user)
-              done(undefined, user)
+              await authUserRepositry.save(user)
+              return done(undefined, user)
             }
           } catch (error) {
             console.log(error)
+          }
+        }
+      )
+    )
+
+    passport.use(
+      new LocalStrategy(
+        { usernameField: 'email', passwordField: 'password' },
+        async (email, password, done) => {
+          try {
+            const existingUser = await authUserRepositry.findOne({ where: { email } })
+            if (!existingUser || !existingUser.password) {
+              return done(null, false)
+            }
+            if (!bcrypt.compareSync(password, existingUser.password)) {
+              return done(null, false)
+            }
+            return done(null, existingUser)
+          } catch (error) {
+            console.log('LocalERROR', error)
+            done(error)
           }
         }
       )
@@ -119,7 +147,7 @@ createConnection()
 
     // const userfind = async () => {
     //   try {
-    //     return await userRepositry.findOne(1)
+    //     return await authUserRepositry.findOne(1)
     //   } catch (err) {
     //     console.log('ERROR REPOSITRY')
     //   }
@@ -135,7 +163,7 @@ createConnection()
     //       update.loginGoogle = false
     //       await EntityManager.save(update)
     //     }
-    //     return await userRepositry.findOne(1)
+    //     return await authUserRepositry.findOne(1)
     //   } catch (err) {
     //     console.log(err)
     //   }

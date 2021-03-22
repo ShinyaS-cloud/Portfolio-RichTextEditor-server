@@ -55,7 +55,7 @@ export class ArticleController {
       const fetchedPost = post.map((p) => {
         let isFavorite = false
         if (p.favorites !== undefined) {
-          const favoriteUser = p.favorites.filter((f) => +f.userId === +param.userId)
+          const favoriteUser = p.favorites.filter((f) => +f.userId! === +param.userId)
           isFavorite = Boolean(favoriteUser.length)
           delete p.favorites
         }

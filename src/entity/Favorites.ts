@@ -7,11 +7,11 @@ export class Favorites {
   @PrimaryGeneratedColumn()
   id?: number
 
-  @Column({ type: 'int', nullable: false })
-  userId!: number
+  @Column({ type: 'int', nullable: true })
+  userId?: number
 
   @Column({ type: 'int', nullable: true })
-  articleId!: number
+  articleId?: number
 
   @ManyToOne(() => User, (user) => user.favorites, { cascade: true })
   @JoinColumn({ name: 'userId' })
