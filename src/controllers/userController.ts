@@ -6,6 +6,7 @@ import {
   Post,
   QueryParam,
   Redirect,
+  Req,
   Res,
   UseBefore
 } from 'routing-controllers'
@@ -31,10 +32,16 @@ export class UserController {
   getAuthGoogleCallback() {}
 
   @Get('/api/current_user')
-  @UseBefore((req: express.Request, res: express.Response) => {
-    res.send(req.user)
-  })
-  getCurrentUser() {}
+  async getCurrentUser(@Req() req: express.Request, @Res() res: express.Response) {
+    if (!req.user) {
+      return res.send(req.user)
+    }
+    // req.userにはpasswordやgoogleIdなどが入っているので外してクライアントに返す
+    // req.userに型がついていないのでやむおえずany型に変換
+    const authUser: any = { ...req.user }
+    const user = await this.userRepositry.findOne({ where: { authUserId: authUser.id } })
+    return res.send({ ...user, isLogedIn: true })
+  }
 
   @Get('/api/csrfToken')
   @UseBefore((req: express.Request, res: express.Response) => {
@@ -75,7 +82,7 @@ export class UserController {
         if (err) {
           return next(err)
         }
-        return res.send(req.user)
+        return res.send('OK')
       })
     })(req, res, next)
   })

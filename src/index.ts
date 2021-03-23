@@ -7,7 +7,7 @@ import passport from 'passport'
 import { createConnection, getConnection, getRepository } from 'typeorm'
 import session from 'express-session'
 import { useExpressServer } from 'routing-controllers'
-import flash from 'connect-flash'
+
 import csrf from 'csurf'
 import bcrypt from 'bcrypt'
 import Google from 'passport-google-oauth20'
@@ -125,7 +125,6 @@ createConnection()
 
     app.use(passport.initialize())
     app.use(passport.session())
-    app.use(flash())
 
     useExpressServer(app, {
       controllers: [UserController, ArticleController],

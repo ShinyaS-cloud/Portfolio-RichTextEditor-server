@@ -7,7 +7,7 @@ import fs from 'fs'
 define(AuthUser, (faker: typeof Faker) => {
   const authUser = new AuthUser()
   const password = faker.random.word()
-  fs.appendFile('password.txt', password + '/n', (error) => {
+  fs.appendFile('password.txt', password + '\n', (error) => {
     if (error) {
       throw error
     }
