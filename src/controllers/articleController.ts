@@ -21,13 +21,17 @@ import { Favorites } from '../entity/Favorites'
 
 const csrfProtection = csrf({ cookie: true })
 
-/**
- * Contoroller
- */
 class GetUserCategoryQuery {
   categoryNumber!: number
   userId!: number
 }
+class GetArticleQuery {
+  id!: number
+  authUserId!: number
+}
+/**
+ * Contoroller
+ */
 
 @JsonController()
 export class ArticleController {
@@ -54,16 +58,18 @@ export class ArticleController {
 
       const fetchedPost = post.map((p) => {
         let isFavorite = false
+        let favoriteCount = 0
         if (p.favorites !== undefined) {
           const favoriteUser = p.favorites.filter((f) => +f.userId! === +param.userId)
           isFavorite = Boolean(favoriteUser.length)
+          favoriteCount = p.favorites.length
           delete p.favorites
         }
         delete p.content
         delete p.user?.authUserId
         delete p.user?.introduction
         delete p.user?.headerUrl
-        return { ...p, isFavorite }
+        return { ...p, isFavorite, favoriteCount }
       })
       return fetchedPost
     } catch (error) {
@@ -78,13 +84,16 @@ export class ArticleController {
   async getArticleListUser(@QueryParam('userId') userId: number) {
     try {
       const post = await this.fetchArticle({ userId })
-
       const fetchPost = post.map((p) => {
         delete p.content
         delete p.user?.authUserId
         delete p.user?.introduction
         delete p.user?.headerUrl
-        return { ...p, isFavorite: false }
+        let favoriteCount = 0
+        if (p.favorites) {
+          favoriteCount = p.favorites.length
+        }
+        return { ...p, isFavorite: false, favoriteCount }
       })
       return fetchPost
     } catch (error) {
@@ -120,16 +129,25 @@ export class ArticleController {
    * 選択された一つのArticleを返すAPI
    */
   @Get('/api/article')
-  async getArticle(@QueryParam('id') param: number, @Res() res: express.Response) {
-    const article = await this.articleRepositry.findOne(param, { relations: ['user'] })
+  async getArticle(@QueryParams() param: GetArticleQuery, @Res() res: express.Response) {
+    const article = await this.articleRepositry.findOne(param.id, {
+      relations: ['user', 'favorites']
+    })
+    const favorite = await this.favoritesRepositry.find({
+      where: { articleId: param.id, userId: param.authUserId }
+    })
     if (article === undefined || article.user === undefined) {
       return '/'
+    }
+    let favoriteCount = 0
+    const isFavorite = Boolean(favorite.length)
+    if (article.favorites) {
+      favoriteCount = article.favorites.length
     }
     delete article.user.authUserId
     delete article.user.introduction
     delete article.user.headerUrl
-    res.json(article)
-    return res
+    return { ...article, favoriteCount, isFavorite }
   }
 
   /**
@@ -163,7 +181,6 @@ export class ArticleController {
    */
   @Post('/api/save')
   @UseBefore(csrfProtection)
-  @Redirect('/')
   async postSaveArticle(
     @Session() session: any,
     @Req() req: express.Request,
@@ -176,6 +193,7 @@ export class ArticleController {
         content: data.content,
         category: data.category
       })
+      return res.redirect('/')
     } catch (error) {
       console.log(error)
     }
@@ -195,18 +213,24 @@ export class ArticleController {
       const prevFavorite = await this.favoritesRepositry.find({
         where: { userId: req.body.userId, articleId: req.body.articleId }
       })
+      const prevFavoriteCount = await this.favoritesRepositry.count({
+        where: { articleId: req.body.articleId }
+      })
       let isFavorite
+      let favoriteCount = prevFavoriteCount
       if (prevFavorite.length) {
         await this.favoritesRepositry.delete(prevFavorite[0])
         isFavorite = Boolean(prevFavorite.length - 1)
+        favoriteCount -= 1
       } else {
         const favorite = new Favorites()
         favorite.userId = req.body.userId
         favorite.articleId = req.body.articleId
         await this.favoritesRepositry.save(favorite)
         isFavorite = true
+        favoriteCount += 1
       }
-      return { isFavorite }
+      return { isFavorite, favoriteCount }
     } catch (error) {
       console.log(error)
     }
