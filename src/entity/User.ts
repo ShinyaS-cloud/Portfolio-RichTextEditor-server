@@ -2,6 +2,8 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToOne, OneToMany, JoinColumn
 import { AuthUser } from './AuthUser'
 import { Article } from './Article'
 import { Favorites } from './Favorites'
+import { Follows } from './Follows'
+import { Comment } from './Comment'
 
 @Entity()
 export class User {
@@ -35,4 +37,13 @@ export class User {
 
   @OneToMany(() => Favorites, (favorites) => favorites.user)
   favorites?: Favorites[]
+
+  @OneToMany(() => Comment, (comment) => comment.user)
+  comment?: Comment[]
+
+  @OneToMany(() => Follows, (follows) => follows.fromUser)
+  fromFollows?: Follows[]
+
+  @OneToMany(() => Follows, (follows) => follows.toUser)
+  toFollows?: Follows[]
 }

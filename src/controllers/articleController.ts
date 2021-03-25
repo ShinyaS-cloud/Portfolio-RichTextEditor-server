@@ -18,30 +18,34 @@ import { getRepository } from 'typeorm'
 import { Article } from '../entity/Article'
 import { User } from '../entity/User'
 import { Favorites } from '../entity/Favorites'
+import { Comment } from '../entity/Comment'
 
 const csrfProtection = csrf({ cookie: true })
 
 class GetUserCategoryQuery {
   categoryNumber!: number
   userId!: number
+  next!: number
 }
 class GetArticleQuery {
   id!: number
   authUserId!: number
 }
 /**
- * Contoroller
+ * Controller
  */
 
 @JsonController()
 export class ArticleController {
-  articleRepositry = getRepository(Article)
-  userRepositry = getRepository(User)
-  favoritesRepositry = getRepository(Favorites)
-  fetchArticle = async (where: any) => {
-    const article = await this.articleRepositry.find({
+  articleRepository = getRepository(Article)
+  userRepository = getRepository(User)
+  favoritesRepository = getRepository(Favorites)
+  commentRepository = getRepository(Comment)
+  fetchArticle = async (where: any, next: number) => {
+    const article = await this.articleRepository.find({
       relations: ['user', 'favorites'],
       take: 12,
+      skip: next,
       order: { createdAt: 'DESC' },
       where: where
     })
@@ -54,7 +58,7 @@ export class ArticleController {
   @Get('/api/articleList')
   async getArticleListCategory(@QueryParams() param: GetUserCategoryQuery) {
     try {
-      const post = await this.fetchArticle({ category: param.categoryNumber })
+      const post = await this.fetchArticle({ category: param.categoryNumber }, param.next)
 
       const fetchedPost = post.map((p) => {
         let isFavorite = false
@@ -83,7 +87,7 @@ export class ArticleController {
   @Get('/api/articleList/user')
   async getArticleListUser(@QueryParam('userId') userId: number) {
     try {
-      const post = await this.fetchArticle({ userId })
+      const post = await this.fetchArticle({ userId }, 0)
       const fetchPost = post.map((p) => {
         delete p.content
         delete p.user?.authUserId
@@ -107,7 +111,7 @@ export class ArticleController {
   @Get('/api/articleList/favorite')
   async getArticleListFavorite(@QueryParam('userId') userId: number) {
     try {
-      const post = await this.favoritesRepositry.find({
+      const post = await this.favoritesRepository.find({
         relations: ['user', 'article'],
         where: { userId }
       })
@@ -126,14 +130,39 @@ export class ArticleController {
   }
 
   /**
+   *  paramsで指定されたuserのお気に入りのarticleを返すAPI
+   */
+  @Get('/api/comment')
+  async getCommentList(@QueryParam('articleId') articleId: number) {
+    try {
+      const Comment = await this.commentRepository.find({
+        relations: ['user'],
+        where: { articleId }
+      })
+
+      const fetchComment = Comment.map((p) => {
+        delete p.user?.authUserId
+        delete p.user?.introduction
+        delete p.user?.headerUrl
+        const returnComment = { comment: p.comment, user: p.user }
+        return { ...returnComment }
+      })
+
+      return fetchComment
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  /**
    * 選択された一つのArticleを返すAPI
    */
   @Get('/api/article')
   async getArticle(@QueryParams() param: GetArticleQuery, @Res() res: express.Response) {
-    const article = await this.articleRepositry.findOne(param.id, {
+    const article = await this.articleRepository.findOne(param.id, {
       relations: ['user', 'favorites']
     })
-    const favorite = await this.favoritesRepositry.find({
+    const favorite = await this.favoritesRepository.find({
       where: { articleId: param.id, userId: param.authUserId }
     })
     if (article === undefined || article.user === undefined) {
@@ -160,11 +189,11 @@ export class ArticleController {
     try {
       const article = new Article()
 
-      const user = await this.userRepositry.findOne({
+      const user = await this.userRepository.findOne({
         where: { id: session.passport.user.id }
       })
       article.user = user
-      const newArticle = await this.articleRepositry.save(article)
+      const newArticle = await this.articleRepository.save(article)
 
       if (user === undefined) {
         return console.log('error')
@@ -188,7 +217,7 @@ export class ArticleController {
   ) {
     try {
       const { data } = req.body
-      await this.articleRepositry.update(data.articleId, {
+      await this.articleRepository.update(data.articleId, {
         title: data.title,
         content: data.content,
         category: data.category
@@ -210,23 +239,23 @@ export class ArticleController {
       if (+req.body.userId === 0) {
         return res.send(false)
       }
-      const prevFavorite = await this.favoritesRepositry.find({
+      const prevFavorite = await this.favoritesRepository.find({
         where: { userId: req.body.userId, articleId: req.body.articleId }
       })
-      const prevFavoriteCount = await this.favoritesRepositry.count({
+      const prevFavoriteCount = await this.favoritesRepository.count({
         where: { articleId: req.body.articleId }
       })
       let isFavorite
       let favoriteCount = prevFavoriteCount
       if (prevFavorite.length) {
-        await this.favoritesRepositry.delete(prevFavorite[0])
+        await this.favoritesRepository.delete(prevFavorite[0])
         isFavorite = Boolean(prevFavorite.length - 1)
         favoriteCount -= 1
       } else {
         const favorite = new Favorites()
         favorite.userId = req.body.userId
         favorite.articleId = req.body.articleId
-        await this.favoritesRepositry.save(favorite)
+        await this.favoritesRepository.save(favorite)
         isFavorite = true
         favoriteCount += 1
       }

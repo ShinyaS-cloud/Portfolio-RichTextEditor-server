@@ -11,6 +11,7 @@ import {
 
 import { User } from './User'
 import { Favorites } from './Favorites'
+import { Comment } from './Comment'
 
 @Entity()
 export class Article {
@@ -47,4 +48,7 @@ export class Article {
 
   @OneToMany(() => Favorites, (favorites) => favorites.article)
   favorites?: Favorites[]
+
+  @OneToMany(() => Comment, (comment) => comment.article)
+  comment?: Comment[]
 }

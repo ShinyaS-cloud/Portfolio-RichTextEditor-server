@@ -9,7 +9,7 @@ export default class CreateUser implements Seeder {
   public async run(factory: Factory, connection: Connection) {
     await factory(User)()
       .map(async (user: User) => {
-        const articles: Article[] = await factory(Article)().createMany(10)
+        const articles: Article[] = await factory(Article)().createMany(50)
         const authUser: AuthUser = await factory(AuthUser)().create()
 
         user.article = articles
@@ -17,6 +17,6 @@ export default class CreateUser implements Seeder {
 
         return user
       })
-      .createMany(10)
+      .createMany(30)
   }
 }
