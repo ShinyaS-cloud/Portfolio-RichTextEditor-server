@@ -7,12 +7,13 @@ import natsumeArray from '../testUtil/natsume'
 
 define(Article, (faker: typeof Faker) => {
   const article = new Article()
-  // const seed = faker.random.number(1000)
-  // const mockImages = 'https://picsum.photos/id/' + seed + '/200/300.jpg'
+  const seed = faker.random.number(299) + 1
+  const mockImages = 'img/pet' + seed + '.jpg'
   article.category = faker.random.number(4)
-  // article.imageUrl = mockImages
+  article.imageUrl = mockImages
   article.title = faker.name.title()
   article.abstract = faker.lorem.sentence(10)
+  article.isPublic = true
 
   const varArray = [...Array(100)].fill(undefined)
 

@@ -27,10 +27,7 @@ class GetUserCategoryQuery {
   userId!: number
   next!: number
 }
-class GetArticleQuery {
-  id!: number
-  authUserId!: number
-}
+
 /**
  * Controller
  */
@@ -42,6 +39,7 @@ export class ArticleController {
   favoritesRepository = getRepository(Favorites)
   commentRepository = getRepository(Comment)
   fetchArticle = async (where: any, next: number) => {
+    // nextはどこから読み取るかの番号
     const article = await this.articleRepository.find({
       relations: ['user', 'favorites'],
       take: 12,
@@ -53,12 +51,15 @@ export class ArticleController {
   }
 
   /**
-   *  paramsで指定されたカテゴリーのポストを返すAPI
+   *  paramsで指定されたカテゴリーのarticleを返すAPI
    */
   @Get('/api/articleList')
   async getArticleListCategory(@QueryParams() param: GetUserCategoryQuery) {
     try {
-      const post = await this.fetchArticle({ category: param.categoryNumber }, param.next)
+      const post = await this.fetchArticle(
+        { category: param.categoryNumber, isPublic: true },
+        param.next
+      )
 
       const fetchedPost = post.map((p) => {
         let isFavorite = false
@@ -113,7 +114,7 @@ export class ArticleController {
     try {
       const post = await this.favoritesRepository.find({
         relations: ['user', 'article'],
-        where: { userId }
+        where: { userId, isPublic: true }
       })
 
       const fetchPost = post.map((p) => {
@@ -130,7 +131,7 @@ export class ArticleController {
   }
 
   /**
-   *  paramsで指定されたuserのお気に入りのarticleを返すAPI
+   *  paramsで指定されたuserのcommentを返すAPI
    */
   @Get('/api/comment')
   async getCommentList(@QueryParam('articleId') articleId: number) {
@@ -144,7 +145,7 @@ export class ArticleController {
         delete p.user?.authUserId
         delete p.user?.introduction
         delete p.user?.headerUrl
-        const returnComment = { comment: p.comment, user: p.user }
+        const returnComment = { comment: { id: p.id, comment: p.comment }, user: p.user }
         return { ...returnComment }
       })
 
@@ -158,12 +159,16 @@ export class ArticleController {
    * 選択された一つのArticleを返すAPI
    */
   @Get('/api/article')
-  async getArticle(@QueryParams() param: GetArticleQuery, @Res() res: express.Response) {
-    const article = await this.articleRepository.findOne(param.id, {
+  async getArticle(
+    @QueryParam('id') articleId: number,
+    @Session() session: any,
+    @Res() res: express.Response
+  ) {
+    const article = await this.articleRepository.findOne(articleId, {
       relations: ['user', 'favorites']
     })
     const favorite = await this.favoritesRepository.find({
-      where: { articleId: param.id, userId: param.authUserId }
+      where: { articleId, userId: session.passport.user.id }
     })
     if (article === undefined || article.user === undefined) {
       return '/'
@@ -184,7 +189,7 @@ export class ArticleController {
    */
   @Get('/api/newpost')
   @UseBefore(csrfProtection)
-  @Redirect('/newpost/:articleId')
+  @Redirect('/edit/:codename/:articleId')
   async getNewPost(@Session() session: any) {
     try {
       const article = new Article()
@@ -193,13 +198,14 @@ export class ArticleController {
         where: { id: session.passport.user.id }
       })
       article.user = user
+      article.isPublic = false
       const newArticle = await this.articleRepository.save(article)
 
       if (user === undefined) {
         return console.log('error')
       }
 
-      return { articleId: newArticle.id }
+      return { articleId: newArticle.id, codename: user.codename }
     } catch (error) {
       console.log(error)
     }
@@ -217,12 +223,16 @@ export class ArticleController {
   ) {
     try {
       const { data } = req.body
-      await this.articleRepository.update(data.articleId, {
+      console.log(data)
+
+      const a = await this.articleRepository.update(data.articleId, {
         title: data.title,
         content: data.content,
         category: data.category
       })
-      return res.redirect('/')
+      console.log(a)
+
+      return res.send('OK')
     } catch (error) {
       console.log(error)
     }

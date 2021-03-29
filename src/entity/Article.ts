@@ -33,6 +33,9 @@ export class Article {
   @Column({ type: 'json', nullable: true })
   content?: JSON
 
+  @Column({ type: 'boolean', nullable: false })
+  isPublic?: boolean
+
   @Column({ type: 'int', nullable: true })
   userId?: number
 

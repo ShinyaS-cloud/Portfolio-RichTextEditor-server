@@ -9,8 +9,8 @@ define(User, (faker: typeof Faker) => {
   user.codename = faker.name.firstName().toLowerCase()
   user.introduction = faker.random.words(5)
   user.avatarUrl = faker.random.arrayElement(avatars)
-  const seed = faker.random.number(1000)
-  const mockImages = 'https://picsum.photos/id/' + seed + '/200/300.jpg'
+  const seed = faker.random.number(299) + 1
+  const mockImages = 'img/pet' + seed + '.jpg'
   user.headerUrl = mockImages
   return user
 })
