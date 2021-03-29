@@ -223,7 +223,6 @@ export class ArticleController {
   ) {
     try {
       const { data } = req.body
-      console.log(data)
 
       const a = await this.articleRepository.update(data.articleId, {
         title: data.title,
