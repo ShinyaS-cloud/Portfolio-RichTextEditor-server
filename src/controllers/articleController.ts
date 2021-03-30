@@ -6,7 +6,6 @@ import {
   Post,
   QueryParam,
   QueryParams,
-  Redirect,
   Req,
   Res,
   Session,
@@ -189,7 +188,6 @@ export class ArticleController {
    */
   @Get('/api/newpost')
   @UseBefore(csrfProtection)
-  @Redirect('/edit/:codename/:articleId')
   async getNewPost(@Session() session: any) {
     try {
       const article = new Article()
@@ -199,6 +197,9 @@ export class ArticleController {
       })
       article.user = user
       article.isPublic = false
+      article.content = JSON.parse('{ "blocks": [], "entityMap": {} }')
+      article.category = 0
+      article.title = ''
       const newArticle = await this.articleRepository.save(article)
 
       if (user === undefined) {
@@ -224,12 +225,11 @@ export class ArticleController {
     try {
       const { data } = req.body
 
-      const a = await this.articleRepository.update(data.articleId, {
+      await this.articleRepository.update(data.articleId, {
         title: data.title,
         content: data.content,
         category: data.category
       })
-      console.log(a)
 
       return res.send('OK')
     } catch (error) {
