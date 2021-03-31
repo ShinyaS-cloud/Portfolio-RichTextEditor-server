@@ -1,6 +1,7 @@
 /* eslint-disable space-before-function-paren */
 import 'reflect-metadata'
 import {
+  Delete,
   Get,
   JsonController,
   Post,
@@ -23,6 +24,10 @@ const csrfProtection = csrf({ cookie: true })
 
 class GetUserCategoryQuery {
   categoryNumber!: number
+  userId!: number
+  next!: number
+}
+class GetArticleListCategoryQuery {
   userId!: number
   next!: number
 }
@@ -85,9 +90,13 @@ export class ArticleController {
    *  paramsで指定されたuserのarticleを返すAPI
    */
   @Get('/api/articleList/user')
-  async getArticleListUser(@QueryParam('userId') userId: number) {
+  async getArticleListUser(@QueryParams() arg: GetArticleListCategoryQuery) {
     try {
-      const post = await this.fetchArticle({ userId }, 0)
+      const { userId, next } = arg
+      const post = await this.fetchArticle({ userId }, next)
+      if (!post) {
+        return []
+      }
       const fetchPost = post.map((p) => {
         delete p.content
         delete p.user?.authUserId
@@ -109,22 +118,27 @@ export class ArticleController {
    *  paramsで指定されたuserのお気に入りのarticleを返すAPI
    */
   @Get('/api/articleList/favorite')
-  async getArticleListFavorite(@QueryParam('userId') userId: number) {
+  async getArticleListFavorite(@QueryParams() arg: GetArticleListCategoryQuery) {
     try {
+      const { userId, next } = arg
       const post = await this.favoritesRepository.find({
         relations: ['user', 'article'],
-        where: { userId, isPublic: true }
+        take: 12,
+        skip: next,
+        where: { userId }
       })
-
+      if (!post.length) {
+        return []
+      }
       const fetchPost = post.map((p) => {
         delete p.user?.authUserId
         const returnArticle = { ...p.article, user: p.user }
         delete returnArticle.content
         return { ...returnArticle, isFavorite: true }
       })
-
       return fetchPost
     } catch (error) {
+      console.log('error')
       console.log(error)
     }
   }
@@ -272,5 +286,17 @@ export class ArticleController {
     } catch (error) {
       console.log(error)
     }
+  }
+
+  @Delete('/api/article/delete')
+  async deleteArticle(@Session() session: any, @QueryParam('articleId') articleId: number) {
+    const doneArticle = await this.articleRepository.delete({ id: articleId })
+    return doneArticle
+  }
+
+  @Delete('/api/comment/delete')
+  async deleteComment(@Session() session: any, @QueryParam('commentId') commentId: number) {
+    const doneComment = await this.commentRepository.delete({ id: commentId })
+    return doneComment
   }
 }

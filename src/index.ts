@@ -36,7 +36,7 @@ createConnection()
   .then(async () => {
     const ormConnection: any = getConnection().driver
     const store = new MysqlDBStore({}, ormConnection.pool)
-    const authUserRepositry = getRepository(AuthUser)
+    const authUserRepository = getRepository(AuthUser)
     // const EntityManager = getManager()
 
     const GoogleStrategy = Google.Strategy
@@ -63,7 +63,7 @@ createConnection()
     // ユニークユーザー識別子からユーザーデータを取り出す
     passport.deserializeUser(async (serializeUser: AuthUser, done) => {
       try {
-        const user = await authUserRepositry.findOne({ where: { id: serializeUser.id } })
+        const user = await authUserRepository.findOne({ where: { id: serializeUser.id } })
         done(null, user)
       } catch (error) {
         console.log(error)
@@ -81,7 +81,7 @@ createConnection()
         },
         async (accessToken, refreshToken, profile, done) => {
           try {
-            const existingUser = await authUserRepositry.findOne({
+            const existingUser = await authUserRepository.findOne({
               where: { googleId: profile.id }
             })
             if (existingUser !== undefined) {
@@ -92,7 +92,7 @@ createConnection()
               const user = new AuthUser()
               user.googleId = profile.id
               user.loginGoogle = true
-              await authUserRepositry.save(user)
+              await authUserRepository.save(user)
               return done(undefined, user)
             }
           } catch (error) {
@@ -107,7 +107,7 @@ createConnection()
         { usernameField: 'email', passwordField: 'password' },
         async (email, password, done) => {
           try {
-            const existingUser = await authUserRepositry.findOne({ where: { email } })
+            const existingUser = await authUserRepository.findOne({ where: { email } })
             if (!existingUser || !existingUser.password) {
               return done(null, false)
             }
@@ -146,9 +146,9 @@ createConnection()
 
     // const userfind = async () => {
     //   try {
-    //     return await authUserRepositry.findOne(1)
+    //     return await authUserRepository.findOne(1)
     //   } catch (err) {
-    //     console.log('ERROR REPOSITRY')
+    //     console.log('ERROR REPOSITORY')
     //   }
     // }
 

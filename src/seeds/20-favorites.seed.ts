@@ -6,6 +6,7 @@ import { Factory, Seeder } from 'typeorm-seeding'
 
 import { Comment } from '../entity/Comment'
 import { Favorites } from '../entity/Favorites'
+import { Follows } from '../entity/Follows'
 import faker from 'faker'
 
 export default class CreateFavorite implements Seeder {
@@ -27,6 +28,22 @@ export default class CreateFavorite implements Seeder {
         favorites.user = user
 
         return favorites
+      })
+      .createMany(100)
+
+    // create  follows
+    await factory(Follows)()
+      .map(async (follows: Follows) => {
+        const fromUser = await userRepository.findOne({
+          where: { id: faker.random.number(userCount) + 1 }
+        })
+        const toUser = await userRepository.findOne({
+          where: { id: faker.random.number(userCount) + 1 }
+        })
+        follows.fromUser = fromUser
+        follows.toUser = toUser
+
+        return follows
       })
       .createMany(1000)
 

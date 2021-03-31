@@ -1,14 +1,15 @@
 /* eslint-disable space-before-function-paren */
 import 'reflect-metadata'
 import {
+  Delete,
   Get,
   JsonController,
   Post,
   QueryParam,
-  QueryParams,
   Redirect,
   Req,
   Res,
+  Session,
   UseBefore
 } from 'routing-controllers'
 import express from 'express'
@@ -18,11 +19,6 @@ import { getRepository } from 'typeorm'
 import { AuthUser } from '../entity/AuthUser'
 import { User } from '../entity/User'
 import { Follows } from '../entity/Follows'
-
-class GetUserQuery {
-  codename!: string
-  authUserId!: number
-}
 
 @JsonController()
 export class UserController {
@@ -68,29 +64,33 @@ export class UserController {
    * 取得したユーザー情報を返す
    */
   @Get('/api/profile')
-  async getProfile(@QueryParams() param: GetUserQuery, @Res() res: express.Response) {
+  async getProfile(
+    @Session() session: any,
+    @QueryParam('codename') codename: string,
+    @Res() res: express.Response
+  ) {
     try {
-      const { codename, authUserId } = param
+      const authUserId = session.passport.user.id
       const user = await this.userRepository.findOne({
         where: { codename }
       })
       delete user?.authUserId
-      let toFollowCount = 0
-      let fromFollowCount = 0
+      let followerCount = 0
+      let followeeCount = 0
       let isFollow = false
       if (user) {
         const follow = await this.followsRepository.find({
           where: { fromUserId: authUserId, toUserId: user.id }
         })
         isFollow = Boolean(follow.length)
-        toFollowCount = await this.followsRepository.count({
-          where: { toUserId: user.id }
-        })
-        fromFollowCount = await this.followsRepository.count({
+        followerCount = await this.followsRepository.count({
           where: { fromUserId: user.id }
         })
+        followeeCount = await this.followsRepository.count({
+          where: { toUserId: user.id }
+        })
       }
-      return { ...user, toFollowCount, fromFollowCount, isFollow }
+      return { ...user, followerCount, followeeCount, isFollow }
     } catch (error) {
       console.log(error)
     }
@@ -141,20 +141,20 @@ export class UserController {
         where: { toUserId: req.body.toUserId }
       })
       let isFollow
-      let followCount = prevFollowCount
+      let followerCount = prevFollowCount
       if (prevFollow.length) {
         await this.followsRepository.delete(prevFollow[0])
         isFollow = Boolean(prevFollow.length - 1)
-        followCount -= 1
+        followerCount -= 1
       } else {
         const follow = new Follows()
         follow.fromUserId = req.body.fromUserId
         follow.toUserId = req.body.toUserId
         await this.followsRepository.save(follow)
         isFollow = true
-        followCount += 1
+        followerCount += 1
       }
-      return { isFollow, followCount }
+      return { isFollow, followerCount }
     } catch (error) {
       console.log(error)
     }
@@ -163,44 +163,56 @@ export class UserController {
   /**
    *  paramsで指定されたuserのフォロワーを返すAPI
    */
-  @Get('/api/followeeList')
-  async getFolloweeList(@QueryParam('toUserId') toUserId: number) {
+  @Get('/api/followerList')
+  async getFollowerList(@QueryParam('userId') userId: number) {
     try {
-      const followee = await this.followsRepository.find({
-        where: { toUserId },
-        relations: ['fromUser']
+      const follower = await this.followsRepository.find({
+        select: ['fromUserId', 'toUserId'],
+        where: { fromUserId: userId },
+        relations: ['toUser']
       })
-      const fetchFollowee = followee.map((p) => {
+
+      const fetchFollower = follower.map((p) => {
         delete p.toUser?.authUserId
         delete p.toUser?.headerUrl
         delete p.toUser?.id
         return p.toUser
       })
-      return fetchFollowee
+
+      return fetchFollower
     } catch (error) {
       console.log(error)
     }
   }
 
   /**
-   *  paramsで指定されたuserがフォローしているuserを返すAPI
+   *  paramsで指定されたuserのフォロイーを返すAPI
    */
-  @Get('/api/followList')
-  async getFollowList(@QueryParam('fromUserId') fromUserId: number) {
+  @Get('/api/followeeList')
+  async getFolloweeList(@QueryParam('userId') userId: number) {
     try {
-      const follow = await this.followsRepository.find({
-        where: { fromUserId },
-        relations: ['toUser']
+      const followee = await this.followsRepository.find({
+        select: ['fromUserId', 'toUserId'],
+        where: { toUserId: userId },
+        relations: ['fromUser']
       })
-      const fetchFollow = follow.map((p) => {
-        delete p.toUser?.authUserId
-        delete p.toUser?.headerUrl
-        delete p.toUser?.id
-        return p.toUser
+
+      const fetchFollowee = followee.map((p) => {
+        delete p.fromUser?.authUserId
+        delete p.fromUser?.headerUrl
+        delete p.fromUser?.id
+        return p.fromUser
       })
-      return fetchFollow
+
+      return fetchFollowee
     } catch (error) {
       console.log(error)
     }
+  }
+
+  @Delete('/api/user/delete')
+  async deleteUser(@Session() session: any) {
+    const doneUser = await this.authUserRepository.delete({ id: session.passport.user.id })
+    return doneUser
   }
 }
