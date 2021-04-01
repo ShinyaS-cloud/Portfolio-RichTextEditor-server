@@ -90,12 +90,10 @@ export class ArticleController {
   async getArticleListFavorite(session: any, arg: GetArticleQuery) {
     try {
       const authUserId = session.passport.user.id
-      const { userId, next } = arg
+      const { userId, next, categoryNumber } = arg
 
       const favorite = await this.favoritesRepository.find({
         relations: ['user', 'article'],
-        take: 12,
-        skip: next,
         where: { userId }
       })
 
@@ -103,13 +101,19 @@ export class ArticleController {
         return []
       }
 
-      const favoriteId = favorite.map((p) => {
-        return { id: p.articleId }
+      const articleFavoriteIdList = favorite.map((p) => {
+        let where: any = { id: p.articleId, category: categoryNumber, isPublic: true }
+        if (p.userId !== authUserId) {
+          where = { id: p.articleId, category: categoryNumber }
+        }
+        return where
       })
 
       const article = await this.articleRepository.find({
         relations: ['user', 'favorites'],
-        where: favoriteId
+        take: 12,
+        skip: next,
+        where: articleFavoriteIdList
       })
       if (!article) {
         return []
@@ -146,16 +150,16 @@ export class ArticleController {
       if (authUserId === 0) {
         return []
       }
-      let where
-      let isPublic = true
+      let where: any
+      const isPublic = true
       switch (param.type) {
         case 'category':
           where = { category: param.categoryNumber, isPublic }
           return await this.fetchArticle(where, session, param)
 
         case 'user':
-          if (+param.userId !== authUserId) {
-            isPublic = false
+          if (+param.userId === authUserId) {
+            where = { category: param.categoryNumber, userId: +param.userId }
           }
           where = { category: param.categoryNumber, userId: +param.userId, isPublic }
           return await this.fetchArticle(where, session, param)

@@ -82,7 +82,7 @@ export class UserController {
         const follow = await this.followsRepository.find({
           where: { fromUserId: authUserId, toUserId: user.id }
         })
-        isFollow = Boolean(follow.length)
+        isFollow = !!(follow.length)
         followerCount = await this.followsRepository.count({
           where: { fromUserId: user.id }
         })
