@@ -22,14 +22,11 @@ import { Comment } from '../entity/Comment'
 
 const csrfProtection = csrf({ cookie: true })
 
-class GetUserCategoryQuery {
+class GetArticleQuery {
   categoryNumber!: number
   userId!: number
   next!: number
-}
-class GetArticleListCategoryQuery {
-  userId!: number
-  next!: number
+  type!: 'user' | 'category' | 'favorite'
 }
 
 /**
@@ -42,103 +39,134 @@ export class ArticleController {
   userRepository = getRepository(User)
   favoritesRepository = getRepository(Favorites)
   commentRepository = getRepository(Comment)
-  fetchArticle = async (where: any, next: number) => {
+
+  async fetchArticle(where: any, session: any, arg: GetArticleQuery) {
     // nextはどこから読み取るかの番号
-    const article = await this.articleRepository.find({
-      relations: ['user', 'favorites'],
-      take: 12,
-      skip: next,
-      order: { createdAt: 'DESC' },
-      where: where
-    })
-    return article
+    try {
+      const authUserId = session.passport.user.id
+      const article = await this.articleRepository.find({
+        relations: ['user', 'favorites'],
+        take: 12,
+        select: [
+          'id',
+          'title',
+          'abstract',
+          'imageUrl',
+          'category',
+          'userId',
+          'createdAt',
+          'updatedAt',
+          'isPublic'
+        ],
+        skip: arg.next,
+        order: { createdAt: 'DESC' },
+        where: where
+      })
+      if (!article) {
+        return []
+      }
+
+      const fetchedPost = article.map((p) => {
+        let isFavorite = false
+        let favoriteCount = 0
+        if (p.favorites) {
+          const favoriteUser = p.favorites.find((f) => +f.userId! === authUserId)
+          isFavorite = !!favoriteUser
+          favoriteCount = p.favorites.length
+          delete p.favorites
+        }
+        delete p.user?.authUserId
+        delete p.user?.headerUrl
+        delete p.user?.introduction
+        return { ...p, isFavorite, favoriteCount }
+      })
+      return fetchedPost
+    } catch (error) {
+      console.log('Error')
+      console.log(error)
+    }
+  }
+
+  async getArticleListFavorite(session: any, arg: GetArticleQuery) {
+    try {
+      const authUserId = session.passport.user.id
+      const { userId, next } = arg
+
+      const favorite = await this.favoritesRepository.find({
+        relations: ['user', 'article'],
+        take: 12,
+        skip: next,
+        where: { userId }
+      })
+
+      if (!favorite.length) {
+        return []
+      }
+
+      const favoriteId = favorite.map((p) => {
+        return { id: p.articleId }
+      })
+
+      const article = await this.articleRepository.find({
+        relations: ['user', 'favorites'],
+        where: favoriteId
+      })
+      if (!article) {
+        return []
+      }
+
+      const fetchedPost = article.map((p) => {
+        let isFavorite = false
+        let favoriteCount = 0
+        if (p.favorites) {
+          const favoriteUser = p.favorites.find((f) => +f.userId! === authUserId)
+          isFavorite = !!favoriteUser
+          favoriteCount = p.favorites.length
+          delete p.favorites
+        }
+        delete p.user?.authUserId
+        delete p.user?.headerUrl
+        delete p.user?.introduction
+        return { ...p, isFavorite, favoriteCount }
+      })
+      return fetchedPost
+    } catch (error) {
+      console.log('error')
+      console.log(error)
+    }
   }
 
   /**
    *  paramsで指定されたカテゴリーのarticleを返すAPI
    */
   @Get('/api/articleList')
-  async getArticleListCategory(@QueryParams() param: GetUserCategoryQuery) {
+  async getArticleListCategory(@Session() session: any, @QueryParams() param: GetArticleQuery) {
     try {
-      const post = await this.fetchArticle(
-        { category: param.categoryNumber, isPublic: true },
-        param.next
-      )
-
-      const fetchedPost = post.map((p) => {
-        let isFavorite = false
-        let favoriteCount = 0
-        if (p.favorites !== undefined) {
-          const favoriteUser = p.favorites.filter((f) => +f.userId! === +param.userId)
-          isFavorite = Boolean(favoriteUser.length)
-          favoriteCount = p.favorites.length
-          delete p.favorites
-        }
-        delete p.content
-        delete p.user?.authUserId
-        delete p.user?.introduction
-        delete p.user?.headerUrl
-        return { ...p, isFavorite, favoriteCount }
-      })
-      return fetchedPost
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  /**
-   *  paramsで指定されたuserのarticleを返すAPI
-   */
-  @Get('/api/articleList/user')
-  async getArticleListUser(@QueryParams() arg: GetArticleListCategoryQuery) {
-    try {
-      const { userId, next } = arg
-      const post = await this.fetchArticle({ userId }, next)
-      if (!post) {
+      const authUserId = session.passport.user.id
+      if (authUserId === 0) {
         return []
       }
-      const fetchPost = post.map((p) => {
-        delete p.content
-        delete p.user?.authUserId
-        delete p.user?.introduction
-        delete p.user?.headerUrl
-        let favoriteCount = 0
-        if (p.favorites) {
-          favoriteCount = p.favorites.length
-        }
-        return { ...p, isFavorite: false, favoriteCount }
-      })
-      return fetchPost
-    } catch (error) {
-      console.log(error)
-    }
-  }
+      let where
+      let isPublic = true
+      switch (param.type) {
+        case 'category':
+          where = { category: param.categoryNumber, isPublic }
+          return await this.fetchArticle(where, session, param)
 
-  /**
-   *  paramsで指定されたuserのお気に入りのarticleを返すAPI
-   */
-  @Get('/api/articleList/favorite')
-  async getArticleListFavorite(@QueryParams() arg: GetArticleListCategoryQuery) {
-    try {
-      const { userId, next } = arg
-      const post = await this.favoritesRepository.find({
-        relations: ['user', 'article'],
-        take: 12,
-        skip: next,
-        where: { userId }
-      })
-      if (!post.length) {
-        return []
+        case 'user':
+          if (+param.userId !== authUserId) {
+            isPublic = false
+          }
+          where = { category: param.categoryNumber, userId: +param.userId, isPublic }
+          return await this.fetchArticle(where, session, param)
+
+        case 'favorite':
+          return await this.getArticleListFavorite(session, param)
+
+        default:
+          break
       }
-      const fetchPost = post.map((p) => {
-        delete p.user?.authUserId
-        const returnArticle = { ...p.article, user: p.user }
-        delete returnArticle.content
-        return { ...returnArticle, isFavorite: true }
-      })
-      return fetchPost
     } catch (error) {
-      console.log('error')
       console.log(error)
     }
   }
@@ -257,13 +285,18 @@ export class ArticleController {
 
   @Post('/api/favorite')
   @UseBefore(csrfProtection)
-  async postFavorite(@Req() req: express.Request, @Res() res: express.Response) {
+  async postFavorite(
+    @Session() session: any,
+    @Req() req: express.Request,
+    @Res() res: express.Response
+  ) {
     try {
-      if (+req.body.userId === 0) {
+      const authUserId = session.passport.user.id
+      if (authUserId === 0) {
         return res.send(false)
       }
       const prevFavorite = await this.favoritesRepository.find({
-        where: { userId: req.body.userId, articleId: req.body.articleId }
+        where: { userId: authUserId, articleId: req.body.articleId }
       })
       const prevFavoriteCount = await this.favoritesRepository.count({
         where: { articleId: req.body.articleId }
@@ -272,11 +305,11 @@ export class ArticleController {
       let favoriteCount = prevFavoriteCount
       if (prevFavorite.length) {
         await this.favoritesRepository.delete(prevFavorite[0])
-        isFavorite = Boolean(prevFavorite.length - 1)
+        isFavorite = !!(prevFavorite.length - 1)
         favoriteCount -= 1
       } else {
         const favorite = new Favorites()
-        favorite.userId = req.body.userId
+        favorite.userId = authUserId
         favorite.articleId = req.body.articleId
         await this.favoritesRepository.save(favorite)
         isFavorite = true
