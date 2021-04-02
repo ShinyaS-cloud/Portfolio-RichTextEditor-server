@@ -16,6 +16,7 @@ import { keys } from '../config/keys'
 import { AuthUser } from './entity/AuthUser'
 import { UserController } from './controllers/userController'
 import { ArticleController } from './controllers/articleController'
+import { MyMiddleware } from './middlewares/MyMiddleware'
 const MysqlDBStore = require('express-mysql-session')(session)
 
 // interface Error {
@@ -128,70 +129,8 @@ createConnection()
 
     useExpressServer(app, {
       controllers: [UserController, ArticleController],
-      authorizationChecker: async (action, roles: string[]) => {
-        action.response.locals.isAuthenticated = action.request.session.isLoggedIn
-        action.response.locals.csrfToken = action.request.csrfToken()
-        const isAuthed = action.response.locals.isAuthenticated
-        const isCsrf = action.response.locals.csrfToken
-        let message = action.request.flash('error')
-        if (message.length > 0) {
-          message = message[0]
-        } else {
-          message = null
-        }
-        action.response.locals.errorMessage = message
-        return isAuthed && isCsrf
-      }
+      middlewares: [MyMiddleware]
     })
-
-    // const userfind = async () => {
-    //   try {
-    //     return await authUserRepository.findOne(1)
-    //   } catch (err) {
-    //     console.log('ERROR REPOSITORY')
-    //   }
-    // }
-
-    // const userCreate = async (user: any) => {
-    //   try {
-    //     if (!user) {
-    //       const password = await bcrypt.hash('Max', 12)
-    //       const update = new Users()
-    //       update.password = password
-    //       update.email = 'test@test.com'
-    //       update.loginGoogle = false
-    //       await EntityManager.save(update)
-    //     }
-    //     return await authUserRepositry.findOne(1)
-    //   } catch (err) {
-    //     console.log(err)
-    //   }
-    // }
-    // const user = await userfind()
-    // await userCreate(user)
-
-    // app.get('/', function (req, res) {
-    //   console.log(1)
-    //   res.send('ok')
-    // })
-
-    // // catch 404 and forward to error handler
-    // app.use((req, res, next) => {
-    //   next(createError(404))
-    // })
-
-    // // error handler
-    // app.use(
-    //   (err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    //     // set locals, only providing error in development
-    //     res.locals.message = err.message
-    //     res.locals.error = req.app.get('env') === 'development' ? err : {}
-
-    //     // render the error page
-    //     res.status(err.status || 500)
-    //     // res.json('error')
-    //   }
-    // )
 
     const PORT = process.env.PORT || 5000
     app.listen(PORT)

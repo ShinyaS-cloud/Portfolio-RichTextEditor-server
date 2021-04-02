@@ -9,7 +9,7 @@ define(Article, (faker: typeof Faker) => {
   const article = new Article()
   const seed = faker.random.number(299) + 1
   const mockImages = 'img/pet' + seed + '.jpg'
-  article.category = faker.random.number(4)
+  article.category = faker.random.number(5)
   article.imageUrl = mockImages
   article.title = faker.name.title()
   article.abstract = faker.lorem.sentence(10)
@@ -26,7 +26,6 @@ define(Article, (faker: typeof Faker) => {
     'header-five',
     'header-six',
     'blockquote',
-    'code-block',
     'unordered-list-item',
     'ordered-list-item',
     'left',
@@ -36,7 +35,6 @@ define(Article, (faker: typeof Faker) => {
 
   const inlineStyle = [
     'BOLD',
-    'CODE',
     'ITALIC',
     'STRIKETHROUGH',
     'UNDERLINE',

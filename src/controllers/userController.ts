@@ -19,6 +19,7 @@ import { getRepository } from 'typeorm'
 import { AuthUser } from '../entity/AuthUser'
 import { User } from '../entity/User'
 import { Follows } from '../entity/Follows'
+import { MyMiddleware } from '../middlewares/MyMiddleware'
 
 @JsonController()
 export class UserController {
@@ -70,7 +71,10 @@ export class UserController {
     @Res() res: express.Response
   ) {
     try {
-      const authUserId = session.passport.user.id
+      let authUserId = 0
+      if (session.passport?.user?.id) {
+        authUserId = session.passport.user.id
+      }
       const user = await this.userRepository.findOne({
         where: { codename }
       })
@@ -79,10 +83,10 @@ export class UserController {
       let followeeCount = 0
       let isFollow = false
       if (user) {
-        const follow = await this.followsRepository.find({
+        const follow = await this.followsRepository.findOne({
           where: { fromUserId: authUserId, toUserId: user.id }
         })
-        isFollow = !!(follow.length)
+        isFollow = !!follow
         followerCount = await this.followsRepository.count({
           where: { fromUserId: user.id }
         })
@@ -128,33 +132,40 @@ export class UserController {
    * フォローボタンを押す
    */
 
+  @UseBefore(MyMiddleware)
   @Post('/api/follow')
-  async postFollow(@Req() req: express.Request, @Res() res: express.Response) {
+  async postFollow(
+    @Session() session: any,
+    @Req() req: express.Request,
+    @Res() res: express.Response
+  ) {
     try {
-      if (+req.body.fromUserId === 0) {
+      const fromUserId = session.passport?.user?.id
+      if (!fromUserId) {
         return res.send(false)
       }
       const prevFollow = await this.followsRepository.find({
-        where: { fromUserId: req.body.fromUserId, toUserId: req.body.toUserId }
+        where: { fromUserId: fromUserId, toUserId: req.body.toUserId }
       })
       const prevFollowCount = await this.followsRepository.count({
         where: { toUserId: req.body.toUserId }
       })
+
       let isFollow
-      let followerCount = prevFollowCount
+      let followeeCount = prevFollowCount
       if (prevFollow.length) {
         await this.followsRepository.delete(prevFollow[0])
-        isFollow = Boolean(prevFollow.length - 1)
-        followerCount -= 1
+        isFollow = !!(prevFollow.length - 1)
+        followeeCount -= 1
       } else {
         const follow = new Follows()
-        follow.fromUserId = req.body.fromUserId
+        follow.fromUserId = fromUserId
         follow.toUserId = req.body.toUserId
         await this.followsRepository.save(follow)
         isFollow = true
-        followerCount += 1
+        followeeCount += 1
       }
-      return { isFollow, followerCount }
+      return { isFollow, followeeCount }
     } catch (error) {
       console.log(error)
     }
@@ -210,6 +221,7 @@ export class UserController {
     }
   }
 
+  @UseBefore(MyMiddleware)
   @Delete('/api/user/delete')
   async deleteUser(@Session() session: any) {
     const doneUser = await this.authUserRepository.delete({ id: session.passport.user.id })

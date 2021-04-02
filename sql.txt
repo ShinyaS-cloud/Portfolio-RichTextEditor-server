@@ -1,0 +1,1 @@
+DELETE FROM `rich-text-editor`.follows WHERE id NOT IN (SELECT min_id from (SELECT MIN(id) min_id FROM `rich-text-editor`.follows GROUP BY fromUserId , toUserId) tmp);

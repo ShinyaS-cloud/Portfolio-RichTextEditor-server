@@ -19,6 +19,7 @@ import { Article } from '../entity/Article'
 import { User } from '../entity/User'
 import { Favorites } from '../entity/Favorites'
 import { Comment } from '../entity/Comment'
+import { MyMiddleware } from '../middlewares/MyMiddleware'
 
 const csrfProtection = csrf({ cookie: true })
 
@@ -26,7 +27,7 @@ class GetArticleQuery {
   categoryNumber!: number
   userId!: number
   next!: number
-  type!: 'user' | 'category' | 'favorite'
+  type!: 'user' | 'category' | 'favorite' | 'comment'
 }
 
 /**
@@ -40,10 +41,15 @@ export class ArticleController {
   favoritesRepository = getRepository(Favorites)
   commentRepository = getRepository(Comment)
 
-  async fetchArticle(where: any, session: any, arg: GetArticleQuery) {
-    // nextはどこから読み取るかの番号
+  /**
+   * articleを取ってくる共通の処理
+   *
+   * where:検索条件
+   * next:何番目から読み取るかの番号
+   * authUserId:ログインしているuserのid
+   */
+  async fetchArticle(where: any, next: number, authUserId: number) {
     try {
-      const authUserId = session.passport.user.id
       const article = await this.articleRepository.find({
         relations: ['user', 'favorites'],
         take: 12,
@@ -58,7 +64,7 @@ export class ArticleController {
           'updatedAt',
           'isPublic'
         ],
-        skip: arg.next,
+        skip: next,
         order: { createdAt: 'DESC' },
         where: where
       })
@@ -87,9 +93,14 @@ export class ArticleController {
     }
   }
 
-  async getArticleListFavorite(session: any, arg: GetArticleQuery) {
+  /**
+   * お気に入りした記事の検索する
+   *
+   * whereをfetchArticleに渡す
+   */
+
+  async getArticleListFavorite(arg: GetArticleQuery, authUserId: number) {
     try {
-      const authUserId = session.passport.user.id
       const { userId, next, categoryNumber } = arg
 
       const favorite = await this.favoritesRepository.find({
@@ -109,30 +120,7 @@ export class ArticleController {
         return where
       })
 
-      const article = await this.articleRepository.find({
-        relations: ['user', 'favorites'],
-        take: 12,
-        skip: next,
-        where: articleFavoriteIdList
-      })
-      if (!article) {
-        return []
-      }
-
-      const fetchedPost = article.map((p) => {
-        let isFavorite = false
-        let favoriteCount = 0
-        if (p.favorites) {
-          const favoriteUser = p.favorites.find((f) => +f.userId! === authUserId)
-          isFavorite = !!favoriteUser
-          favoriteCount = p.favorites.length
-          delete p.favorites
-        }
-        delete p.user?.authUserId
-        delete p.user?.headerUrl
-        delete p.user?.introduction
-        return { ...p, isFavorite, favoriteCount }
-      })
+      const fetchedPost = await this.fetchArticle(articleFavoriteIdList, next, authUserId)
       return fetchedPost
     } catch (error) {
       console.log('error')
@@ -141,31 +129,67 @@ export class ArticleController {
   }
 
   /**
-   *  paramsで指定されたカテゴリーのarticleを返すAPI
+   * コメントした記事を検索する
+   *
+   * whereをfetchArticleに渡す
+   */
+
+  async getArticleListComment(arg: GetArticleQuery, authUserId: number) {
+    try {
+      const { userId, next, categoryNumber } = arg
+
+      const comment = await this.commentRepository.find({ where: { userId } })
+
+      if (!comment.length) {
+        return []
+      }
+
+      const articleCommentIdList = comment.map((p) => {
+        let where: any = { id: p.articleId, category: categoryNumber, isPublic: true }
+        if (p.userId !== authUserId) {
+          where = { id: p.articleId, category: categoryNumber }
+        }
+        return where
+      })
+
+      const fetchedPost = await this.fetchArticle(articleCommentIdList, next, authUserId)
+      return fetchedPost
+    } catch (error) {
+      console.log('error')
+      console.log(error)
+    }
+  }
+
+  /**
+   *  typeごとに処理を切り替える
+   * 基本はwhereが検索条件になっている
    */
   @Get('/api/articleList')
   async getArticleListCategory(@Session() session: any, @QueryParams() param: GetArticleQuery) {
     try {
-      const authUserId = session.passport.user.id
-      if (authUserId === 0) {
-        return []
+      let authUserId = 0
+      if (session.passport?.user?.id) {
+        authUserId = session.passport.user.id
       }
       let where: any
       const isPublic = true
       switch (param.type) {
         case 'category':
           where = { category: param.categoryNumber, isPublic }
-          return await this.fetchArticle(where, session, param)
+          return await this.fetchArticle(where, param.next, authUserId)
 
         case 'user':
           if (+param.userId === authUserId) {
             where = { category: param.categoryNumber, userId: +param.userId }
           }
+
           where = { category: param.categoryNumber, userId: +param.userId, isPublic }
-          return await this.fetchArticle(where, session, param)
+          return await this.fetchArticle(where, param.next, authUserId)
 
         case 'favorite':
-          return await this.getArticleListFavorite(session, param)
+          return await this.getArticleListFavorite(param, authUserId)
+        case 'comment':
+          return await this.getArticleListComment(param, authUserId)
 
         default:
           break
@@ -209,11 +233,16 @@ export class ArticleController {
     @Session() session: any,
     @Res() res: express.Response
   ) {
+    let authUserId = 0
+
+    if (session.passport?.user?.id) {
+      authUserId = session.passport.user.id
+    }
     const article = await this.articleRepository.findOne(articleId, {
       relations: ['user', 'favorites']
     })
     const favorite = await this.favoritesRepository.find({
-      where: { articleId, userId: session.passport.user.id }
+      where: { articleId, userId: authUserId }
     })
     if (article === undefined || article.user === undefined) {
       return '/'
@@ -232,14 +261,21 @@ export class ArticleController {
   /**
    *新しいArticleを作成するAPI
    */
+
+  @UseBefore(MyMiddleware)
   @Get('/api/newpost')
   @UseBefore(csrfProtection)
   async getNewPost(@Session() session: any) {
     try {
+      let authUserId = 0
+
+      if (session.passport?.user?.id) {
+        authUserId = session.passport.user.id
+      }
       const article = new Article()
 
       const user = await this.userRepository.findOne({
-        where: { id: session.passport.user.id }
+        where: { id: authUserId }
       })
       article.user = user
       article.isPublic = false
@@ -261,6 +297,7 @@ export class ArticleController {
   /**
    * 編集されたArticleを保存する
    */
+  @UseBefore(MyMiddleware)
   @Post('/api/save')
   @UseBefore(csrfProtection)
   async postSaveArticle(
@@ -287,6 +324,7 @@ export class ArticleController {
    * いいねボタンを押す
    */
 
+  @UseBefore(MyMiddleware)
   @Post('/api/favorite')
   @UseBefore(csrfProtection)
   async postFavorite(
@@ -295,7 +333,12 @@ export class ArticleController {
     @Res() res: express.Response
   ) {
     try {
-      const authUserId = session.passport.user.id
+      let authUserId = 0
+
+      if (session.passport?.user?.id) {
+        authUserId = session.passport.user.id
+      }
+
       if (authUserId === 0) {
         return res.send(false)
       }
@@ -325,12 +368,14 @@ export class ArticleController {
     }
   }
 
+  @UseBefore(MyMiddleware)
   @Delete('/api/article/delete')
   async deleteArticle(@Session() session: any, @QueryParam('articleId') articleId: number) {
     const doneArticle = await this.articleRepository.delete({ id: articleId })
     return doneArticle
   }
 
+  @UseBefore(MyMiddleware)
   @Delete('/api/comment/delete')
   async deleteComment(@Session() session: any, @QueryParam('commentId') commentId: number) {
     const doneComment = await this.commentRepository.delete({ id: commentId })
