@@ -17,6 +17,6 @@ export default class CreateUser implements Seeder {
 
         return user
       })
-      .createMany(30)
+      .createMany(50)
   }
 }

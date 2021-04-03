@@ -4,13 +4,16 @@ import { define } from 'typeorm-seeding'
 import { User } from '../entity/User'
 
 define(User, (faker: typeof Faker) => {
+  const category = ['pet', 'sports', 'novel', 'IT', 'food']
+  const categoryNumber = faker.random.number(4)
+
   const user = new User()
   user.name = faker.name.findName()
   user.codename = faker.name.firstName().toLowerCase()
   user.introduction = faker.random.words(5)
   user.avatarUrl = faker.random.arrayElement(avatars)
-  const seed = faker.random.number(299) + 1
-  const mockImages = 'img/pet' + seed + '.jpg'
+  const seed = faker.random.number(99) + 1
+  const mockImages = 'img/' + category[categoryNumber] + '/img' + seed + '.jpg'
   user.headerUrl = mockImages
   return user
 })

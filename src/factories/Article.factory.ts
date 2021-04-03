@@ -6,10 +6,12 @@ import { Article } from '../entity/Article'
 import natsumeArray from '../testUtil/natsume'
 
 define(Article, (faker: typeof Faker) => {
+  const category = ['pet', 'sports', 'novel', 'IT', 'food']
+  const categoryNumber = faker.random.number(4)
   const article = new Article()
-  const seed = faker.random.number(299) + 1
-  const mockImages = 'img/pet' + seed + '.jpg'
-  article.category = faker.random.number(5)
+  const seed = faker.random.number(99) + 1
+  const mockImages = 'img/' + category[categoryNumber] + '/img' + seed + '.jpg'
+  article.category = categoryNumber
   article.imageUrl = mockImages
   article.title = faker.name.title()
   article.abstract = faker.lorem.sentence(10)

@@ -29,7 +29,7 @@ export default class CreateFavorite implements Seeder {
 
         return favorites
       })
-      .createMany(100)
+      .createMany(2000)
 
     // create  follows
     await factory(Follows)()
@@ -45,7 +45,7 @@ export default class CreateFavorite implements Seeder {
 
         return follows
       })
-      .createMany(1000)
+      .createMany(500)
 
     // create Comments
     await factory(Comment)()
@@ -61,6 +61,6 @@ export default class CreateFavorite implements Seeder {
 
         return comment
       })
-      .createMany(1000)
+      .createMany(2000)
   }
 }
