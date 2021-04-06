@@ -28,7 +28,9 @@ export class User {
   @Column({ type: 'int', nullable: true })
   authUserId?: number
 
-  @OneToOne(() => AuthUser, (authUser) => authUser.user)
+  @OneToOne(() => AuthUser, (authUser) => authUser.user, {
+    onDelete: 'CASCADE'
+  })
   @JoinColumn({ name: 'authUserId' })
   authUser?: AuthUser
 

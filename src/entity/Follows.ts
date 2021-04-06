@@ -12,11 +12,15 @@ export class Follows {
   @Column({ type: 'int', nullable: true })
   toUserId?: number
 
-  @ManyToOne(() => User, (fromUser) => fromUser.fromFollows, { cascade: true })
+  @ManyToOne(() => User, (fromUser) => fromUser.fromFollows, {
+    onDelete: 'CASCADE'
+  })
   @JoinColumn({ name: 'fromUserId' })
   fromUser?: User
 
-  @ManyToOne(() => User, (toUser) => toUser.toFollows, { cascade: true })
+  @ManyToOne(() => User, (toUser) => toUser.toFollows, {
+    onDelete: 'CASCADE'
+  })
   @JoinColumn({ name: 'toUserId' })
   toUser?: User
 }

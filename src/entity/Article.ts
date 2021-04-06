@@ -45,7 +45,9 @@ export class Article {
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt!: Date
 
-  @ManyToOne(() => User, (user) => user.article, { cascade: true })
+  @ManyToOne(() => User, (user) => user.article, {
+    onDelete: 'CASCADE'
+  })
   @JoinColumn({ name: 'userId' })
   user?: User
 

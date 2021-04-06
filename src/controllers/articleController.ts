@@ -181,9 +181,10 @@ export class ArticleController {
         case 'user':
           if (+param.userId === authUserId) {
             where = { category: param.categoryNumber, userId: +param.userId }
+          } else {
+            where = { category: param.categoryNumber, userId: +param.userId, isPublic }
           }
 
-          where = { category: param.categoryNumber, userId: +param.userId, isPublic }
           return await this.fetchArticle(where, param.next, authUserId)
 
         case 'favorite':
@@ -248,7 +249,7 @@ export class ArticleController {
       return '/'
     }
     let favoriteCount = 0
-    const isFavorite = Boolean(favorite.length)
+    const isFavorite = !!favorite.length
     if (article.favorites) {
       favoriteCount = article.favorites.length
     }
@@ -263,7 +264,7 @@ export class ArticleController {
    */
 
   @UseBefore(MyMiddleware)
-  @Get('/api/newpost')
+  @Post('/api/newpost')
   @UseBefore(csrfProtection)
   async getNewPost(@Session() session: any) {
     try {
@@ -289,6 +290,41 @@ export class ArticleController {
       }
 
       return { articleId: newArticle.id, codename: user.codename }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  /**
+   *新しいcommentを作成するAPI
+   */
+
+  @UseBefore(MyMiddleware)
+  @Post('/api/comment')
+  async getNewComment(@Session() session: any, @Req() req: express.Request) {
+    try {
+      let authUserId = 0
+
+      if (session.passport?.user?.id) {
+        authUserId = session.passport.user.id
+      }
+      const comment = new Comment()
+
+      const user = await this.userRepository.findOne({
+        where: { id: authUserId }
+      })
+      const article = await this.articleRepository.findOne({
+        where: { id: req.body.articleId }
+      })
+
+      if (user === undefined) {
+        return console.log('error')
+      }
+      comment.user = user
+      comment.article = article
+      comment.comment = req.body.comment
+      const newComment = await this.commentRepository.save(comment)
+
+      return { success: !!newComment }
     } catch (error) {
       console.log(error)
     }
@@ -370,15 +406,23 @@ export class ArticleController {
 
   @UseBefore(MyMiddleware)
   @Delete('/api/article/delete')
-  async deleteArticle(@Session() session: any, @QueryParam('articleId') articleId: number) {
-    const doneArticle = await this.articleRepository.delete({ id: articleId })
-    return doneArticle
+  async deleteArticle(@Req() req: express.Request) {
+    try {
+      const doneArticle = await this.articleRepository.delete({ id: req.body.articleId })
+      return doneArticle
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   @UseBefore(MyMiddleware)
   @Delete('/api/comment/delete')
-  async deleteComment(@Session() session: any, @QueryParam('commentId') commentId: number) {
-    const doneComment = await this.commentRepository.delete({ id: commentId })
-    return doneComment
+  async deleteComment(@Req() req: express.Request) {
+    try {
+      const doneComment = await this.commentRepository.delete({ id: req.body.commentId })
+      return doneComment
+    } catch (error) {
+      console.log(error)
+    }
   }
 }

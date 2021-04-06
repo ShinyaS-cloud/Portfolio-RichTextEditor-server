@@ -13,11 +13,15 @@ export class Favorites {
   @Column({ type: 'int', nullable: true })
   articleId?: number
 
-  @ManyToOne(() => User, (user) => user.favorites, { cascade: true })
+  @ManyToOne(() => User, (user) => user.favorites, {
+    onDelete: 'CASCADE'
+  })
   @JoinColumn({ name: 'userId' })
   user?: User
 
-  @ManyToOne(() => Article, (article) => article.favorites, { cascade: true })
+  @ManyToOne(() => Article, (article) => article.favorites, {
+    onDelete: 'CASCADE'
+  })
   @JoinColumn({ name: 'articleId' })
   article?: Article
 }

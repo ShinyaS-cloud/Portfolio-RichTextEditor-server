@@ -16,11 +16,15 @@ export class Comment {
   @Column({ type: 'int', nullable: true })
   articleId?: number
 
-  @ManyToOne(() => User, (user) => user.comment, { cascade: true })
+  @ManyToOne(() => User, (user) => user.comment, {
+    onDelete: 'CASCADE'
+  })
   @JoinColumn({ name: 'userId' })
   user?: User
 
-  @ManyToOne(() => Article, (article) => article.comment, { cascade: true })
+  @ManyToOne(() => Article, (article) => article.comment, {
+    onDelete: 'CASCADE'
+  })
   @JoinColumn({ name: 'articleId' })
   article?: Article
 }
