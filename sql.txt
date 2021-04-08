@@ -1,3 +1,29 @@
 DELETE FROM `rich-text-editor`.favorites WHERE id NOT IN (SELECT min_id from (SELECT MIN(id) min_id FROM `rich-text-editor`.favorites GROUP BY userId , articleId) tmp);
 DELETE FROM `rich-text-editor`.follows WHERE id NOT IN (SELECT min_id from (SELECT MIN(id) min_id FROM `rich-text-editor`.follows GROUP BY fromUserId , toUserId) tmp);
 DELETE FROM `rich-text-editor`.user WHERE id NOT IN (SELECT min_id from (SELECT MIN(id) min_id FROM `rich-text-editor`.user GROUP BY codename) tmp);
+
+
+  const uploadImage = async (file: any) => {
+    const res = await axios.get('/upload', {
+      params: {
+        filename: file.name,
+        filetype: file.type
+      }
+    })
+    const options = {
+      headers: {
+        'Content-Type': file.type
+      }
+    }
+    const res1 = await axios.put(res.data.url, file, options)
+    const { name } = res1.config.data
+    let url = `/img/test/${file.name}`
+    if (process.env.NODE_ENV === 'production') {
+      url = `https://[バケット名を入れてください].s3.amazonaws.com/${file.name}`
+    }
+    return {
+      name,
+      isUploading: true,
+      url
+    }
+  }
