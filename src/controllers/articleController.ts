@@ -347,7 +347,9 @@ export class ArticleController {
       await this.articleRepository.update(data.articleId, {
         title: data.title,
         content: data.content,
-        category: data.category
+        category: data.category,
+        abstract: data.abstract,
+        isPublic: data.isPublic
       })
 
       return res.send('OK')
