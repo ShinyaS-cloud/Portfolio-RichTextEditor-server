@@ -10,6 +10,7 @@ import {
   Req,
   Res,
   Session,
+  UseAfter,
   UseBefore
 } from 'routing-controllers'
 import express from 'express'
@@ -120,12 +121,62 @@ export class UserController {
   getAuth() {}
 
   @Post('/api/signup')
+  @UseAfter((req: express.Request, res: express.Response, next: express.NextFunction) => {
+    passport.authenticate('local', (err, user, info) => {
+      if (err) {
+        return next(err)
+      }
+      if (!user) {
+        return res.send(info)
+      }
+      req.logIn(user, (err) => {
+        if (err) {
+          return next(err)
+        }
+        return res.send('OK')
+      })
+    })(req, res, next)
+  })
   async postSignUp(@Req() req: express.Request, @Res() res: express.Response) {
-    const newUser = new AuthUser()
-    newUser.email = req.body.email
-    newUser.password = req.body.password
-    const doneUser = await this.authUserRepository.save(newUser)
-    return doneUser
+    const existingUser = await this.authUserRepository.findOne({ where: { email: req.body.email } })
+    if (existingUser) {
+      return res.send('already exist user!!')
+    }
+    const newAuthUser = new AuthUser()
+    newAuthUser.email = req.body.email
+    newAuthUser.password = req.body.password
+    newAuthUser.loginGoogle = false
+    try {
+      const doneAuthUser = await this.authUserRepository.save(newAuthUser)
+      req.login(doneAuthUser, (err) => {
+        console.log(err)
+      })
+      const newUser = new User()
+      newUser.authUser = newAuthUser
+      newUser.codename = '' + doneAuthUser.id
+      const doneUser = await this.userRepository.save(newUser)
+      return doneUser
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  @UseBefore(MyMiddleware)
+  @Post('/api/userEdit')
+  async postEdit(
+    @Session() session: any,
+    @Req() req: express.Request,
+    @Res() res: express.Response
+  ) {
+    const authUser = session.passport.user
+    const prevUser = await this.userRepository.findOne({ where: { authUserId: authUser.id } })
+    const newAuthUser = new AuthUser()
+    newAuthUser.email = req.body.email
+    newAuthUser.password = req.body.password
+    const doneAuthUser = await this.authUserRepository.save(newAuthUser)
+    const newUser = { ...prevUser, name: req.body.name, introduction: req.body.introduction }
+    await this.userRepository.save(newUser)
+    return doneAuthUser
   }
 
   /**
@@ -223,8 +274,9 @@ export class UserController {
 
   @UseBefore(MyMiddleware)
   @Delete('/api/user/delete')
-  async deleteUser(@Session() session: any) {
+  async deleteUser(@Session() session: any, @Req() req: express.Request) {
     const doneUser = await this.authUserRepository.delete({ id: session.passport.user.id })
+    req.logout()
     return doneUser
   }
 }
