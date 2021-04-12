@@ -17,7 +17,7 @@ import { AuthUser } from './entity/AuthUser'
 import { UserController } from './controllers/userController'
 import { ArticleController } from './controllers/articleController'
 import { MyMiddleware } from './middlewares/MyMiddleware'
-const MysqlDBStore = require('express-mysql-session')(session)
+const PostgresDBStore = require('connect-pg-simple')(session)
 // import aws from 'aws-sdk'
 // const AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY
 // const AWS_SECRET_KEY = process.env.AWS_SECRET_KEY
@@ -63,7 +63,7 @@ app.use(csrfProtection)
 createConnection()
   .then(async () => {
     const ormConnection: any = getConnection().driver
-    const store = new MysqlDBStore({}, ormConnection.pool)
+    const store = new PostgresDBStore({}, ormConnection.pool)
     const authUserRepository = getRepository(AuthUser)
     // const EntityManager = getManager()
 
