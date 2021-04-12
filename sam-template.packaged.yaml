@@ -22,7 +22,7 @@ Resources:
   ExpressLambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://rich-text-editor-server-side-bucket/4e6a59a69c6b0eb297fe376fe50c8331
+      CodeUri: s3://rich-text-editor-server-side-bucket/82508f754848e3622054a505984dc6f4
       Handler: main.handler
       MemorySize: 1024
       Runtime: nodejs12.x
