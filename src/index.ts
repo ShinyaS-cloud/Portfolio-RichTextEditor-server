@@ -173,7 +173,9 @@ createConnection()
     //   }
     // })
 
-    const PORT = process.env.PORT || 5000
-    app.listen(PORT)
+    // const PORT = process.env.PORT || 5000
+    // app.listen(PORT)
+
+    module.exports = app
   })
   .catch((error) => console.log('Data Access Error : ', error))
