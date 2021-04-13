@@ -17,6 +17,7 @@ import { AuthUser } from './entity/AuthUser'
 import { UserController } from './controllers/userController'
 import { ArticleController } from './controllers/articleController'
 import { MyMiddleware } from './middlewares/MyMiddleware'
+const cors = require('cors')
 const MysqlDBStore = require('express-mysql-session')(session)
 // import aws from 'aws-sdk'
 // const AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY
@@ -53,6 +54,7 @@ const MysqlDBStore = require('express-mysql-session')(session)
 const app = express()
 const secret = 'fherafhukfsrhgbnsgukrvbkakrekgfk'
 const csrfProtection = csrf({ cookie: true })
+app.use(cors({ credentials: true, origin: true }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
