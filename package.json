@@ -2,14 +2,7 @@
   "name": "serverside",
   "version": "0.0.0",
   "private": true,
-  "main": "src/lambda.js",
-  "config": {
-    "s3BucketName": "rich-text-editor-server-side-bucket",
-    "region": "ap-northeast-1",
-    "cloudFormationStackName": "ServerlessExpressStack",
-    "functionName": "",
-    "domain": ""
-  },
+  "main": "src/index.js",
   "scripts": {
     "start": "nodemon ./src/index.ts",
     "typeorm": "ts-node -r tsconfig-paths/register node_modules/typeorm/cli.js",
@@ -17,25 +10,9 @@
     "seed:config": "ts-node ./node_modules/typeorm-seeding/dist/cli.js config",
     "seed:run": "ts-node ./node_modules/typeorm-seeding/dist/cli.js seed",
     "build": "tsc --build",
-    "clean": "tsc --build --clean",
-    "local": "node scripts/local",
-    "invoke-lambda": "cross-var aws lambda invoke --function-name $npm_package_config_functionName --region $npm_package_config_region --payload file://api-gateway-event.json lambda-invoke-response.json && cat lambda-invoke-response.json",
-    "create-bucket": "cross-var aws s3 mb s3://$npm_package_config_s3BucketName --region $npm_package_config_region",
-    "delete-bucket": "cross-var aws s3 rb s3://$npm_package_config_s3BucketName --region $npm_package_config_region",
-    "package": "cross-var aws cloudformation package --template ./sam-template.yaml --s3-bucket $npm_package_config_s3BucketName --output-template sam-template.packaged.yaml --region $npm_package_config_region",
-    "deploy": "cross-var aws cloudformation deploy --template-file sam-template.packaged.yaml --stack-name $npm_package_config_cloudFormationStackName --capabilities CAPABILITY_IAM --region $npm_package_config_region --parameter-overrides DomainName=$npm_package_config_domain",
-    "package-deploy": "npm run build && npm run package && npm run deploy",
-    "delete-stack": "cross-var aws cloudformation delete-stack --stack-name $npm_package_config_cloudFormationStackName --region $npm_package_config_region",
-    "setup": "npm install && (cross-var aws s3api get-bucket-location --bucket $npm_package_config_s3BucketName --region $npm_package_config_region || npm run create-bucket) && npm run package-deploy"
+    "clean": "tsc --build --clean"
   },
   "devDependencies": {
-    "@types/cookie-parser": "^1.4.2",
-    "@types/csurf": "^1.11.0",
-    "@types/express": "^4.17.11",
-    "@types/faker": "^5.1.7",
-    "@types/http-errors": "^1.8.0",
-    "@types/morgan": "^1.9.2",
-    "@types/node": "^14.14.31",
     "@typescript-eslint/eslint-plugin": "^4.16.1",
     "@typescript-eslint/parser": "^4.16.1",
     "cross-var": "^1.1.0",
@@ -47,15 +24,18 @@
     "eslint-plugin-prettier": "^3.3.1",
     "eslint-plugin-promise": "^4.3.1",
     "eslint-plugin-react": "^7.22.0",
-    "faker": "^4.1.0",
     "nodemon": "^2.0.7",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.2.1",
-    "ts-node": "9.1.1",
-    "typeorm-seeding": "^1.6.1",
-    "typescript": "4.1.5"
+    "prettier": "^2.2.1"
   },
   "dependencies": {
+    "@types/cookie-parser": "^1.4.2",
+    "@types/csurf": "^1.11.0",
+    "@types/express": "^4.17.11",
+    "@types/faker": "^5.1.7",
+    "@types/http-errors": "^1.8.0",
+    "@types/morgan": "^1.9.2",
+    "@types/node": "^14.14.31",
     "@types/bcrypt": "^3.0.0",
     "@types/cookie-session": "^2.0.42",
     "@types/express-jwt": "^6.0.1",
@@ -67,8 +47,7 @@
     "@types/passport-google-oauth20": "^2.0.6",
     "@types/passport-local": "^1.0.33",
     "@types/qs": "^6.9.6",
-    "@vendia/serverless-express": "^4.3.4",
-    "aws-sdk": "^2.882.0",
+    "faker": "^4.1.0",
     "bcrypt": "^5.0.1",
     "class-transformer": "^0.1.10",
     "class-validator": "^0.8.5",
@@ -77,7 +56,6 @@
     "cors": "^2.8.5",
     "csurf": "^1.11.0",
     "debug": "~2.6.9",
-    "ejs": "^3.1.6",
     "express": "^4.17.1",
     "express-handlebars": "^5.2.1",
     "express-jwt": "^6.0.0",
@@ -95,6 +73,9 @@
     "reflect-metadata": "^0.1.13",
     "routing-controllers": "^0.7.7",
     "ts-jest": "^26.5.3",
-    "typeorm": "0.2.31"
+    "typeorm": "0.2.31",
+    "ts-node": "9.1.1",
+    "typeorm-seeding": "^1.6.1",
+    "typescript": "4.1.5"
   }
 }

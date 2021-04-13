@@ -27,3 +27,5 @@ DELETE FROM `rich-text-editor`.user WHERE id NOT IN (SELECT min_id from (SELECT 
       url
     }
   }
+
+  
