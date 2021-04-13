@@ -17,7 +17,8 @@ import { AuthUser } from './entity/AuthUser'
 import { UserController } from './controllers/userController'
 import { ArticleController } from './controllers/articleController'
 import { MyMiddleware } from './middlewares/MyMiddleware'
-require('dotenv').config()
+const ENV_PATH = path.join(__dirname, '.env')
+require('dotenv').config({ path: ENV_PATH })
 const cors = require('cors')
 const MysqlDBStore = require('express-mysql-session')(session)
 // import aws from 'aws-sdk'
