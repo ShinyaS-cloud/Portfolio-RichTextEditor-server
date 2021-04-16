@@ -59,7 +59,7 @@ app.use(cors({ credentials: true, origin: true }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
-app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal'])
+app.set('trust proxy', true)
 
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(csrfProtection)
@@ -80,7 +80,9 @@ createConnection()
         resave: false,
         saveUninitialized: false,
         store: store,
+        proxy: true,
         cookie: {
+          secure: true,
           maxAge: 1000 * 60 * 60 * 24 * 30
         }
       })
@@ -182,7 +184,7 @@ createConnection()
     //   }
     // })
 
-    const PORT = process.env.PORT || 8080
+    const PORT = process.env.PORT || 5000
     app.listen(PORT)
   })
   .catch((error) => console.log('Data Access Error : ', error))

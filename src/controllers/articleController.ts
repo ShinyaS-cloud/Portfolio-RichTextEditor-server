@@ -276,7 +276,7 @@ export class ArticleController {
       const article = new Article()
 
       const user = await this.userRepository.findOne({
-        where: { id: authUserId }
+        where: { authUserId: authUserId }
       })
       article.user = user
       article.isPublic = false
@@ -286,7 +286,7 @@ export class ArticleController {
       const newArticle = await this.articleRepository.save(article)
 
       if (user === undefined) {
-        return console.log('error')
+        return console.log('000000error')
       }
 
       return { articleId: newArticle.id, codename: user.codename }

@@ -13,6 +13,8 @@ import {
   UseAfter,
   UseBefore
 } from 'routing-controllers'
+
+import bcrypt from 'bcrypt'
 import express from 'express'
 
 import passport from 'passport'
@@ -144,7 +146,7 @@ export class UserController {
     }
     const newAuthUser = new AuthUser()
     newAuthUser.email = req.body.email
-    newAuthUser.password = req.body.password
+    newAuthUser.password = bcrypt.hashSync(req.body.password, 12)
     newAuthUser.loginGoogle = false
     try {
       const doneAuthUser = await this.authUserRepository.save(newAuthUser)
@@ -170,9 +172,15 @@ export class UserController {
   ) {
     const authUser = session.passport.user
     const prevUser = await this.userRepository.findOne({ where: { authUserId: authUser.id } })
-    const newAuthUser = new AuthUser()
+    const newAuthUser = await this.authUserRepository.findOne({
+      where: { id: authUser.id }
+    })
+    if (!newAuthUser) {
+      return console.log('AuthUserError')
+    }
     newAuthUser.email = req.body.email
     newAuthUser.password = req.body.password
+    newAuthUser.loginGoogle = false
     const doneAuthUser = await this.authUserRepository.save(newAuthUser)
     const newUser = { ...prevUser, name: req.body.name, introduction: req.body.introduction }
     await this.userRepository.save(newUser)

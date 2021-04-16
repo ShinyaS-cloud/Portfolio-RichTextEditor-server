@@ -1,10 +1,10 @@
 {
   "type": "mysql",
-  "host": "database-2.cxsotsifctdy.ap-northeast-1.rds.amazonaws.com",
+  "host": "localhost",
   "port": 3306,
   "username": "root",
   "password": "xV*W8of7CGN*kQAGb7MoJwsT",
-  "database": "myDatabase",
+  "database": "rich-text-editor",
   "synchronize": true,
   "logging": false,
   "entities": ["src/entity/**/*.ts"],
