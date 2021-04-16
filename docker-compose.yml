@@ -1,7 +1,57 @@
-version: '3'
+version: '3.7'
+
 services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    privileged: true
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - conf:/etc/nginx/conf.d
+      - dhparam:/etc/nginx/dhparam
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - html:/usr/share/nginx/html
+      - vhost:/etc/nginx/vhost.d
+      - certs:/etc/nginx/certs:ro
+    restart: always
+    labels:
+      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: 'true'
+
+  letsencrypt-nginx:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: letsencrypt-nginx
+    privileged: true
+    environment:
+      NGINX_PROXY_CONTAINER: nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - certs:/etc/nginx/certs:rw
+      - html:/usr/share/nginx/html
+      - acme:/etc/acme.sh
+      - vhost:/etc/nginx/vhost.d
+    restart: always
+    depends_on:
+      - nginx-proxy
+
   server:
     build:
-      context: .
-    ports:
-      - 8080:80
+      context: ./Portfolio-RichTextEditor-server
+      dockerfile: ./Dockerfile
+    environment:
+      VIRTUAL_HOST: richtextapi.tk
+      VIRTUAL_PORT: 8080
+      LETSENCRYPT_HOST: richtextapi.tk
+      LETSENCRYPT_EMAIL: spyken123@gmail.com
+volumes:
+  conf:
+  html:
+  vhost:
+  certs:
+  acme:
+  dhparam:
+networks:
+  default:
+    external:
+      name: nginx-proxy

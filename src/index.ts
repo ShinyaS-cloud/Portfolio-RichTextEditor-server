@@ -17,8 +17,7 @@ import { AuthUser } from './entity/AuthUser'
 import { UserController } from './controllers/userController'
 import { ArticleController } from './controllers/articleController'
 import { MyMiddleware } from './middlewares/MyMiddleware'
-const ENV_PATH = path.join(__dirname, '.env')
-require('dotenv').config({ path: ENV_PATH })
+
 const cors = require('cors')
 const MysqlDBStore = require('express-mysql-session')(session)
 // import aws from 'aws-sdk'
@@ -60,6 +59,7 @@ app.use(cors({ credentials: true, origin: true }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
+app.set('trust proxy', true)
 
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(csrfProtection)
@@ -163,6 +163,11 @@ createConnection()
       middlewares: [MyMiddleware]
     })
 
+    app.get('/', (req, res) => {
+      console.log('request', req)
+      console.log('response', res)
+      throw new Error('BROKEN') // Express will catch this on its own.
+    })
     // app.get('/upload', (req, res) => {
     //   if (process.env.NODE_ENV === 'production') {
     //     upload(req.query)
@@ -177,7 +182,7 @@ createConnection()
     //   }
     // })
 
-    const PORT = process.env.PORT || 5000
+    const PORT = process.env.PORT || 8080
     app.listen(PORT)
   })
   .catch((error) => console.log('Data Access Error : ', error))
