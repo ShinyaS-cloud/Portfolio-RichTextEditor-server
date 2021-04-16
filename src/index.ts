@@ -59,7 +59,7 @@ app.use(cors({ credentials: true, origin: true }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
-app.set('trust proxy', true)
+app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal'])
 
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(csrfProtection)
