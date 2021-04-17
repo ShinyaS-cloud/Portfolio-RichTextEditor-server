@@ -103,6 +103,15 @@ export class UserController {
     }
   }
 
+  @Post('/auth/cognito')
+  @UseBefore((req: express.Request, res: express.Response, next: express.NextFunction) => {
+    passport.authenticate('cognito', {
+      successRedirect: '/',
+      failureRedirect: '/login'
+    })
+  })
+  getAuthCognito() {}
+
   @Post('/api/login')
   @UseBefore((req: express.Request, res: express.Response, next: express.NextFunction) => {
     passport.authenticate('local', (err, user, info) => {
@@ -147,7 +156,6 @@ export class UserController {
     const newAuthUser = new AuthUser()
     newAuthUser.email = req.body.email
     newAuthUser.password = bcrypt.hashSync(req.body.password, 12)
-    newAuthUser.loginGoogle = false
     try {
       const doneAuthUser = await this.authUserRepository.save(newAuthUser)
       req.login(doneAuthUser, (err) => {
@@ -180,7 +188,6 @@ export class UserController {
     }
     newAuthUser.email = req.body.email
     newAuthUser.password = req.body.password
-    newAuthUser.loginGoogle = false
     const doneAuthUser = await this.authUserRepository.save(newAuthUser)
     const newUser = { ...prevUser, name: req.body.name, introduction: req.body.introduction }
     await this.userRepository.save(newUser)

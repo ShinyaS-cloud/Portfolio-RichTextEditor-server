@@ -16,8 +16,8 @@ export class AuthUser {
   @Column({ type: 'char', length: 200, nullable: true })
   googleId?: string
 
-  @Column({ type: 'boolean', nullable: false })
-  loginGoogle!: boolean
+  @Column({ type: 'char', length: 200, nullable: true })
+  cognitoId?: string
 
   @OneToOne(() => User, (user) => user.authUser)
   user?: User

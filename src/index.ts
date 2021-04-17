@@ -17,6 +17,7 @@ import { AuthUser } from './entity/AuthUser'
 import { UserController } from './controllers/userController'
 import { ArticleController } from './controllers/articleController'
 import { MyMiddleware } from './middlewares/MyMiddleware'
+const CognitoStrategy = require('passport-cognito')
 
 const cors = require('cors')
 const MysqlDBStore = require('express-mysql-session')(session)
@@ -125,7 +126,6 @@ createConnection()
               console.log('We dont have a recode with this ID,make a new record!')
               const user = new AuthUser()
               user.googleId = profile.id
-              user.loginGoogle = true
               await authUserRepository.save(user)
               return done(undefined, user)
             }
@@ -157,6 +157,37 @@ createConnection()
       )
     )
 
+    passport.use(
+      new CognitoStrategy(
+        {
+          clientId: keys.cognitoClientId,
+          userPoolId: keys.cognitoUserPoolId,
+          region: 'ap-northeast-1'
+        },
+        async (accessToken: any, idToken: any, refreshToken: any, profile: any, done: any) => {
+          process.nextTick(async () => {
+            try {
+              const existingUser = await authUserRepository.findOne({
+                where: { cognitoId: profile.id }
+              })
+              if (existingUser !== undefined) {
+                console.log('we already have a record with the given profile ID')
+                return done(undefined, existingUser)
+              } else {
+                console.log('We dont have a recode with this ID,make a new record!')
+                const user = new AuthUser()
+                user.cognitoId = profile.id
+                await authUserRepository.save(user)
+                return done(undefined, user)
+              }
+            } catch (error) {
+              console.log(error)
+            }
+          })
+        }
+      )
+    )
+
     app.use(passport.initialize())
     app.use(passport.session())
 
@@ -166,8 +197,6 @@ createConnection()
     })
 
     app.get('/', (req, res) => {
-      console.log('request', req)
-      console.log('response', res)
       throw new Error('BROKEN') // Express will catch this on its own.
     })
     // app.get('/upload', (req, res) => {
@@ -184,7 +213,7 @@ createConnection()
     //   }
     // })
 
-    const PORT = process.env.PORT || 5000
+    const PORT = process.env.PORT || 8080
     app.listen(PORT)
   })
   .catch((error) => console.log('Data Access Error : ', error))

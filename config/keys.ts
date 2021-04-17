@@ -2,6 +2,10 @@
 interface KeyTypes {
   googleClientId: string
   googleClientSecret: string
+  cognitoClientSecret: string
+  cognitoClientDomain: string
+  cognitoClientId: string
+  cognitoUserPoolId: string
 }
 
 let keys: KeyTypes
