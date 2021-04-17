@@ -9,6 +9,7 @@
     "test": "jest",
     "seed:config": "ts-node ./node_modules/typeorm-seeding/dist/cli.js config",
     "seed:run": "ts-node ./node_modules/typeorm-seeding/dist/cli.js seed",
+    "dev": "nodemon ./src/index.ts",
     "build": "tsc --build",
     "clean": "tsc --build --clean"
   },

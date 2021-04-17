@@ -196,6 +196,9 @@ createConnection()
       middlewares: [MyMiddleware]
     })
 
+    app.get('/', (req, res) => {
+      throw new Error('BROKEN') // Express will catch this on its own.
+    })
     // app.get('/upload', (req, res) => {
     //   if (process.env.NODE_ENV === 'production') {
     //     upload(req.query)
@@ -210,7 +213,7 @@ createConnection()
     //   }
     // })
 
-    const PORT = process.env.PORT || 5000
+    const PORT = process.env.PORT || 8080
     app.listen(PORT)
   })
   .catch((error) => console.log('Data Access Error : ', error))

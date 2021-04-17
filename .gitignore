@@ -3,3 +3,6 @@ node_modules
 config/dev.ts
 
 ormconfig.json
+ormconfigprod.json
+
+src/.env
