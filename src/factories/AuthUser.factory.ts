@@ -15,6 +15,5 @@ define(AuthUser, (faker: typeof Faker) => {
 
   authUser.email = faker.internet.email()
   authUser.password = bcrypt.hashSync(password, 12)
-  authUser.loginGoogle = false
   return authUser
 })
