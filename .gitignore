@@ -1,8 +1,9 @@
 node_modules
 
-config/dev.ts
+src/config/dev.ts
 
 ormconfig.json
 ormconfigprod.json
 
 src/.env
+dist

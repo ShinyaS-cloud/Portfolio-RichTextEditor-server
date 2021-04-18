@@ -12,42 +12,14 @@ import csrf from 'csurf'
 import bcrypt from 'bcrypt'
 import Google from 'passport-google-oauth20'
 import Local from 'passport-local'
-import { keys } from '../config/keys'
+import { keys } from './config/keys'
 import { AuthUser } from './entity/AuthUser'
 import { UserController } from './controllers/userController'
 import { ArticleController } from './controllers/articleController'
 import { MyMiddleware } from './middlewares/MyMiddleware'
-const CognitoStrategy = require('passport-cognito')
 
 const cors = require('cors')
 const MysqlDBStore = require('express-mysql-session')(session)
-// import aws from 'aws-sdk'
-// const AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY
-// const AWS_SECRET_KEY = process.env.AWS_SECRET_KEY
-// const BUCKET = process.env.BUCKET
-
-// aws.config.update({
-//   accessKeyId: AWS_ACCESS_KEY,
-//   secretAccessKey: AWS_SECRET_KEY
-// })
-// const upload = (file: any) => {
-//   const s3 = new aws.S3()
-//   const params = {
-//     Bucket: BUCKET,
-//     Key: file.filename,
-//     Expires: 60,
-//     ContentType: file.filetype
-//   }
-
-//   return new Promise((resolve, reject) => {
-//     s3.getSignedUrl('putObject', params, (err: any, url: any) => {
-//       if (err) {
-//         reject(err)
-//       }
-//       resolve(url)
-//     })
-//   })
-// }
 
 // interface Error {
 //   status?: number
@@ -157,37 +129,6 @@ createConnection()
       )
     )
 
-    passport.use(
-      new CognitoStrategy(
-        {
-          clientId: keys.cognitoClientId,
-          userPoolId: keys.cognitoUserPoolId,
-          region: 'ap-northeast-1'
-        },
-        async (accessToken: any, idToken: any, refreshToken: any, profile: any, done: any) => {
-          process.nextTick(async () => {
-            try {
-              const existingUser = await authUserRepository.findOne({
-                where: { cognitoId: profile.id }
-              })
-              if (existingUser !== undefined) {
-                console.log('we already have a record with the given profile ID')
-                return done(undefined, existingUser)
-              } else {
-                console.log('We dont have a recode with this ID,make a new record!')
-                const user = new AuthUser()
-                user.cognitoId = profile.id
-                await authUserRepository.save(user)
-                return done(undefined, user)
-              }
-            } catch (error) {
-              console.log(error)
-            }
-          })
-        }
-      )
-    )
-
     app.use(passport.initialize())
     app.use(passport.session())
 
@@ -196,21 +137,7 @@ createConnection()
       middlewares: [MyMiddleware]
     })
 
-    // app.get('/upload', (req, res) => {
-    //   if (process.env.NODE_ENV === 'production') {
-    //     upload(req.query)
-    //       .then((url) => {
-    //         res.json({ url: url })
-    //       })
-    //       .catch((e) => {
-    //         console.log(e)
-    //       })
-    //   } else {
-    //     res.json({ url: 'ok' })
-    //   }
-    // })
-
-    const PORT = process.env.PORT || 5000
+    const PORT = process.env.PORT || 8080
     app.listen(PORT)
   })
   .catch((error) => console.log('Data Access Error : ', error))

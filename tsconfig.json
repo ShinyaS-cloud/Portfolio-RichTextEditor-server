@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "esnext"],
+    "rootDir": "./",
     "target": "ESNext",
-    "module": "CommonJS",
+    "module": "commonjs",
     "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
+    "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
@@ -13,11 +13,9 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react",
-    "baseUrl": "."
+    "baseUrl": "./",
+    "outDir": "./dist/",
+    "typeRoots": ["node_modules/@types"]
   },
-  "include": ["src", "./src/@types/**/*.ts"]
+  "files": ["src/index.ts"]
 }
