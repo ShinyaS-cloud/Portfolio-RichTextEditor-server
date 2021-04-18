@@ -6,7 +6,6 @@ import {
   JsonController,
   Post,
   QueryParam,
-  Redirect,
   Req,
   Res,
   Session,
@@ -29,15 +28,6 @@ export class UserController {
   authUserRepository = getRepository(AuthUser)
   userRepository = getRepository(User)
   followsRepository = getRepository(Follows)
-
-  @Get('/auth/google')
-  @UseBefore(passport.authenticate('google', { scope: ['profile', 'email'] }))
-  getAuthGoogle() {}
-
-  @Get('/auth/google/callback')
-  @UseBefore(passport.authenticate('google'))
-  @Redirect('/')
-  getAuthGoogleCallback() {}
 
   @Get('/api/current_user')
   async getCurrentUser(@Req() req: express.Request, @Res() res: express.Response) {
@@ -102,25 +92,6 @@ export class UserController {
       console.log(error)
     }
   }
-
-  @Post('/api/login')
-  @UseBefore((req: express.Request, res: express.Response, next: express.NextFunction) => {
-    passport.authenticate('local', (err, user, info) => {
-      if (err) {
-        return next(err)
-      }
-      if (!user) {
-        return res.send(info)
-      }
-      req.logIn(user, (err) => {
-        if (err) {
-          return next(err)
-        }
-        return res.send('OK')
-      })
-    })(req, res, next)
-  })
-  getAuth() {}
 
   @Post('/api/signup')
   @UseAfter((req: express.Request, res: express.Response, next: express.NextFunction) => {
