@@ -69,7 +69,6 @@
     "mysql": "^2.18.1",
     "mysql2": "^2.2.5",
     "passport": "^0.4.1",
-    "passport-cognito": "^0.2.2",
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
     "qs": "^6.7.0",

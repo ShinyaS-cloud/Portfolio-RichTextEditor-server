@@ -103,15 +103,6 @@ export class UserController {
     }
   }
 
-  @Post('/auth/cognito')
-  @UseBefore((req: express.Request, res: express.Response, next: express.NextFunction) => {
-    passport.authenticate('cognito', {
-      successRedirect: '/',
-      failureRedirect: '/login'
-    })
-  })
-  getAuthCognito() {}
-
   @Post('/api/login')
   @UseBefore((req: express.Request, res: express.Response, next: express.NextFunction) => {
     passport.authenticate('local', (err, user, info) => {
