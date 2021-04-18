@@ -17,9 +17,18 @@ import { AuthUser } from './entity/AuthUser'
 import { UserController } from './controllers/userController'
 import { ArticleController } from './controllers/articleController'
 import { MyMiddleware } from './middlewares/MyMiddleware'
+import aws from 'aws-sdk'
 
 const cors = require('cors')
 const MysqlDBStore = require('express-mysql-session')(session)
+
+const AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY
+const AWS_SECRET_KEY = process.env.AWS_SECRET_KEY
+
+aws.config.update({
+  accessKeyId: AWS_ACCESS_KEY,
+  secretAccessKey: AWS_SECRET_KEY
+})
 
 // interface Error {
 //   status?: number
