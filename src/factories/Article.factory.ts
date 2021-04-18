@@ -10,7 +10,12 @@ define(Article, (faker: typeof Faker) => {
   const categoryNumber = faker.random.number(4)
   const article = new Article()
   const seed = faker.random.number(99) + 1
-  const mockImages = 'img/' + category[categoryNumber] + '/img' + seed + '.jpg'
+  const mockImages =
+    'https://rich-text-editor-bucket.s3-ap-northeast-1.amazonaws.com/img/' +
+    category[categoryNumber] +
+    '/img' +
+    seed +
+    '.jpg'
   article.category = categoryNumber
   article.imageUrl = mockImages
   article.title = faker.name.title()
