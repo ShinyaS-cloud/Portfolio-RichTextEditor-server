@@ -20,7 +20,6 @@ import { User } from '../entity/User'
 import { Favorites } from '../entity/Favorites'
 import { Comment } from '../entity/Comment'
 import { MyMiddleware } from '../middlewares/MyMiddleware'
-import aws from 'aws-sdk'
 
 const csrfProtection = csrf({ cookie: true })
 
@@ -328,35 +327,6 @@ export class ArticleController {
       return { success: !!newComment }
     } catch (error) {
       console.log(error)
-    }
-  }
-
-  upload = (file: any) => {
-    const s3 = new aws.S3()
-    const params = {
-      Bucket: process.env.BUCKET,
-      Key: file.filename,
-      Expires: 60,
-      ContentType: file.filetype
-    }
-
-    return new Promise((resolve, reject) => {
-      s3.getSignedUrl('putObject', params, (err: any, url: any) => {
-        if (err) {
-          reject(err)
-        }
-        resolve(url)
-      })
-    })
-  }
-
-  @Get('/api/upload')
-  async getUpload(req: express.Request, res: express.Response) {
-    try {
-      const url = await this.upload(req.query)
-      return { url: url }
-    } catch (e) {
-      console.log(e)
     }
   }
 
