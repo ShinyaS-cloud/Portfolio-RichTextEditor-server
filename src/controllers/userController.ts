@@ -18,10 +18,9 @@ import express from 'express'
 
 import passport from 'passport'
 import { getRepository } from 'typeorm'
-import { AuthUser } from '../entity/AuthUser'
-import { User } from '../entity/User'
-import { Follows } from '../entity/Follows'
+
 import { MyMiddleware } from '../middlewares/MyMiddleware'
+import { AuthUser, User, Follows } from '../entity/Index'
 
 @JsonController()
 export class UserController {

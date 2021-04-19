@@ -1,22 +1,8 @@
-// key.ts figure out what set of credentials to return
-interface KeyTypes {
-  googleClientId: string
-  googleClientSecret: string
-  cognitoClientId: string
-  cognitoUserPoolId: string
+import 'express'
+
+export const keys = {
+  googleClientId: '866767840210-8l4rqrs7utpvn8o3vc1dojnflpr525an.apps.googleusercontent.com',
+  googleClientSecret: 'wESa4TKF0xcZzLH68seSpO7c',
+  cognitoClientId: '6g4l3sfdqdl0mt9lju38rpt1oo',
+  cognitoUserPoolId: 'ap-northeast-1_5Vka85q7V'
 }
-
-let keys: KeyTypes
-
-if (process.env.NODE_ENV === 'production') {
-  // we are in production - return the prod set of keys
-
-  const prodKeys = require('./prod')
-  keys = prodKeys.default
-} else {
-  // we are in development - return the dev keys
-  const devKeys = require('./dev')
-  keys = devKeys.default
-}
-
-export { keys }

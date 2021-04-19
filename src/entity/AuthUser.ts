@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToOne } from 'typeorm'
 
-import { User } from './User'
+import { User } from './Index'
 
 @Entity()
 export class AuthUser {
@@ -19,6 +19,6 @@ export class AuthUser {
   @Column({ type: 'char', length: 200, nullable: true })
   cognitoId?: string
 
-  @OneToOne(() => User, (user) => user.authUser)
-  user?: User
+  @OneToOne('User', 'authUser')
+  user: User | undefined
 }

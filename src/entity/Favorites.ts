@@ -1,6 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm'
-import { User } from './User'
-import { Article } from './Article'
+import { Article, User } from './Index'
 
 @Entity()
 export class Favorites {
@@ -13,15 +12,15 @@ export class Favorites {
   @Column({ type: 'int', nullable: true })
   articleId?: number
 
-  @ManyToOne(() => User, (user) => user.favorites, {
+  @ManyToOne('User', 'favorites', {
     onDelete: 'CASCADE'
   })
   @JoinColumn({ name: 'userId' })
-  user?: User
+  user?: User | undefined
 
-  @ManyToOne(() => Article, (article) => article.favorites, {
+  @ManyToOne('Article', 'favorites', {
     onDelete: 'CASCADE'
   })
   @JoinColumn({ name: 'articleId' })
-  article?: Article
+  article?: Article | undefined
 }

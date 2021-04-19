@@ -1,13 +1,10 @@
 /* eslint-disable space-before-function-paren */
-import { Article } from '../entity/Article'
-import { User } from '../entity/User'
+
 import { Connection } from 'typeorm'
 import { Factory, Seeder } from 'typeorm-seeding'
 
-import { Comment } from '../entity/Comment'
-import { Favorites } from '../entity/Favorites'
-import { Follows } from '../entity/Follows'
 import faker from 'faker'
+import { Article, Favorites, Follows, User, Comment } from '../entity/Index.js'
 
 export default class CreateFavorite implements Seeder {
   public async run(factory: Factory, connection: Connection) {
@@ -24,6 +21,9 @@ export default class CreateFavorite implements Seeder {
         const user = await userRepository.findOne({
           where: { id: faker.random.number(userCount) + 1 }
         })
+        if (!user) {
+          return favorites
+        }
         favorites.article = article
         favorites.user = user
 

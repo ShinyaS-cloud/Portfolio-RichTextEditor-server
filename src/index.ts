@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser'
 import passport from 'passport'
 import { createConnection, getConnection, getRepository } from 'typeorm'
 import session from 'express-session'
+import * as expressSession from 'express-session'
 import { useExpressServer } from 'routing-controllers'
 
 import csrf from 'csurf'
@@ -13,13 +14,14 @@ import bcrypt from 'bcrypt'
 import Google from 'passport-google-oauth20'
 import Local from 'passport-local'
 import { keys } from './config/keys'
-import { AuthUser } from './entity/AuthUser'
+import { AuthUser } from './entity/Index'
 import { UserController } from './controllers/userController'
 import { ArticleController } from './controllers/articleController'
 import { MyMiddleware } from './middlewares/MyMiddleware'
 
-const cors = require('cors')
-const MysqlDBStore = require('express-mysql-session')(session)
+import cors from 'cors'
+import mysqlFunc from 'express-mysql-session'
+const MysqlDBStore = mysqlFunc(expressSession)
 
 // interface Error {
 //   status?: number
@@ -34,7 +36,6 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.set('trust proxy', true)
 
-app.use(express.static(path.join(__dirname, 'public')))
 app.use(csrfProtection)
 
 createConnection()

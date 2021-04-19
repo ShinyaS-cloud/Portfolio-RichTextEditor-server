@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm'
-import { User } from './User'
+import { User } from './Index.js'
 
 @Entity()
 export class Follows {
@@ -12,15 +12,15 @@ export class Follows {
   @Column({ type: 'int', nullable: true })
   toUserId?: number
 
-  @ManyToOne(() => User, (fromUser) => fromUser.fromFollows, {
+  @ManyToOne('User', 'fromFollows', {
     onDelete: 'CASCADE'
   })
   @JoinColumn({ name: 'fromUserId' })
-  fromUser?: User
+  fromUser?: User | undefined
 
-  @ManyToOne(() => User, (toUser) => toUser.toFollows, {
+  @ManyToOne('User', 'toFollows', {
     onDelete: 'CASCADE'
   })
   @JoinColumn({ name: 'toUserId' })
-  toUser?: User
+  toUser?: User | undefined
 }

@@ -2,8 +2,7 @@
 import { Article } from '../entity/Article'
 import { Connection } from 'typeorm'
 import { Factory, Seeder } from 'typeorm-seeding'
-import { AuthUser } from '../entity/AuthUser'
-import { User } from '../entity/User'
+import { AuthUser, User } from '../entity/Index'
 
 export default class CreateUser implements Seeder {
   public async run(factory: Factory, connection: Connection) {

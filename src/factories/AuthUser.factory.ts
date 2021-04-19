@@ -1,6 +1,6 @@
 import * as Faker from 'faker/locale/ja'
 import { define } from 'typeorm-seeding'
-import { AuthUser } from '../entity/AuthUser'
+import { AuthUser } from '../entity/Index.js'
 import bcrypt from 'bcrypt'
 import fs from 'fs'
 

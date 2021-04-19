@@ -1,6 +1,6 @@
 node_modules
 
-src/config/dev.ts
+src/config
 
 ormconfig.json
 ormconfigprod.json

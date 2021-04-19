@@ -1,9 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToOne, OneToMany, JoinColumn } from 'typeorm'
-import { AuthUser } from './AuthUser'
-import { Article } from './Article'
-import { Favorites } from './Favorites'
-import { Follows } from './Follows'
-import { Comment } from './Comment'
+import { Article, AuthUser, Favorites, Follows, Comment } from './Index.js'
 
 @Entity()
 export class User {
@@ -28,24 +24,24 @@ export class User {
   @Column({ type: 'int', nullable: true })
   authUserId?: number
 
-  @OneToOne(() => AuthUser, (authUser) => authUser.user, {
+  @OneToOne('AuthUser', 'user', {
     onDelete: 'CASCADE'
   })
   @JoinColumn({ name: 'authUserId' })
   authUser?: AuthUser
 
-  @OneToMany(() => Article, (article) => article.user)
+  @OneToMany('Article', 'user')
   article?: Article[]
 
-  @OneToMany(() => Favorites, (favorites) => favorites.user)
+  @OneToMany('Favorites', 'user')
   favorites?: Favorites[]
 
-  @OneToMany(() => Comment, (comment) => comment.user)
+  @OneToMany('Comment', 'user')
   comment?: Comment[]
 
-  @OneToMany(() => Follows, (follows) => follows.fromUser)
+  @OneToMany('Follows', 'fromUser')
   fromFollows?: Follows[]
 
-  @OneToMany(() => Follows, (follows) => follows.toUser)
+  @OneToMany('Follows', 'toUser')
   toFollows?: Follows[]
 }

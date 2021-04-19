@@ -13,15 +13,10 @@ import {
   UseBefore
 } from 'routing-controllers'
 import express from 'express'
-import csrf from 'csurf'
 import { getRepository } from 'typeorm'
-import { Article } from '../entity/Article'
-import { User } from '../entity/User'
-import { Favorites } from '../entity/Favorites'
-import { Comment } from '../entity/Comment'
-import { MyMiddleware } from '../middlewares/MyMiddleware'
 
-const csrfProtection = csrf({ cookie: true })
+import { MyMiddleware } from '../middlewares/MyMiddleware'
+import { Article, User, Comment, Favorites } from '../entity/Index'
 
 class GetArticleQuery {
   categoryNumber!: number
@@ -265,7 +260,6 @@ export class ArticleController {
 
   @UseBefore(MyMiddleware)
   @Post('/api/newpost')
-  @UseBefore(csrfProtection)
   async getNewPost(@Session() session: any) {
     try {
       let authUserId = 0
@@ -335,7 +329,6 @@ export class ArticleController {
    */
   @UseBefore(MyMiddleware)
   @Post('/api/save')
-  @UseBefore(csrfProtection)
   async postSaveArticle(
     @Session() session: any,
     @Req() req: express.Request,
@@ -364,7 +357,6 @@ export class ArticleController {
 
   @UseBefore(MyMiddleware)
   @Post('/api/favorite')
-  @UseBefore(csrfProtection)
   async postFavorite(
     @Session() session: any,
     @Req() req: express.Request,

@@ -1,7 +1,7 @@
 import * as Faker from 'faker/locale/ja'
 import { define } from 'typeorm-seeding'
 
-import { User } from '../entity/User'
+import { User } from '../entity/Index.js'
 
 define(User, (faker: typeof Faker) => {
   const category = ['pet', 'sports', 'novel', 'IT', 'food']

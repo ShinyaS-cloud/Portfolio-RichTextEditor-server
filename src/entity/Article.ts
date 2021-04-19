@@ -9,9 +9,7 @@ import {
   UpdateDateColumn
 } from 'typeorm'
 
-import { User } from './User'
-import { Favorites } from './Favorites'
-import { Comment } from './Comment'
+import { User, Favorites, Comment } from './Index'
 
 @Entity()
 export class Article {
@@ -45,15 +43,15 @@ export class Article {
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt!: Date
 
-  @ManyToOne(() => User, (user) => user.article, {
+  @ManyToOne('User', 'article', {
     onDelete: 'CASCADE'
   })
   @JoinColumn({ name: 'userId' })
-  user?: User
+  user: User | undefined
 
-  @OneToMany(() => Favorites, (favorites) => favorites.article)
-  favorites?: Favorites[]
+  @OneToMany('Favorites', 'article')
+  favorites: Favorites[] | undefined
 
-  @OneToMany(() => Comment, (comment) => comment.article)
-  comment?: Comment[]
+  @OneToMany('Comment', 'article')
+  comment: Comment[] | undefined
 }

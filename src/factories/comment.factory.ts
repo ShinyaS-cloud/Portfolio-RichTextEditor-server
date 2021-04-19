@@ -2,7 +2,7 @@ import * as Faker from 'faker/locale/ja'
 import natsumeArray from '../testUtil/natsume'
 
 import { define } from 'typeorm-seeding'
-import { Comment } from '../entity/Comment'
+import { Comment } from '../entity/Index.js'
 
 define(Comment, (faker: typeof Faker) => {
   const comment = new Comment()
