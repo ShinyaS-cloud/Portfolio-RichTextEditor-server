@@ -14,7 +14,7 @@ import {
 } from 'routing-controllers'
 
 import bcrypt from 'bcrypt'
-import express from 'express'
+import express, { NextFunction } from 'express'
 
 import passport from 'passport'
 import { getRepository } from 'typeorm'
@@ -93,7 +93,7 @@ export class UserController {
   }
 
   @Post('/api/signup')
-  async postSignUp(@Req() req: express.Request, @Res() res: express.Response) {
+  async postSignUp(@Req() req: express.Request, @Res() res: express.Response, next: NextFunction) {
     const existingUser = await this.authUserRepository.findOne({ where: { email: req.body.email } })
     if (existingUser) {
       return res.send({ error: 'error' })
@@ -102,10 +102,7 @@ export class UserController {
     newAuthUser.email = req.body.email
     newAuthUser.password = bcrypt.hashSync(req.body.password, 12)
     try {
-      const doneAuthUser = await this.authUserRepository.save(newAuthUser)
-      req.login(doneAuthUser, (err) => {
-        console.log(err)
-      })
+      await this.authUserRepository.save(newAuthUser)
       const newUser = new User()
       newUser.authUser = newAuthUser
       newUser.codename = req.body.name
@@ -113,9 +110,22 @@ export class UserController {
       newUser.headerUrl =
         'https://rich-text-editor-bucket.s3-ap-northeast-1.amazonaws.com/img/pet/img1.jpg'
       newUser.avatarUrl =
-        'https://rich-text-editor-bucket.s3-ap-northeast-1.amazonaws.com/f_f_object_100_s256_f_object_100_0bg.png'
-      const doneUser = await this.userRepository.save(newUser)
-      return doneUser
+        'https://rich-text-editor-bucket.s3-ap-northeast-1.amazonaws.com/f_f_event_66_s256_f_event_66_0bg.png'
+      await this.userRepository.save(newUser)
+      passport.authenticate('local', (err, user, info) => {
+        if (err) {
+          return next(err)
+        }
+        if (!user) {
+          return res.send(info)
+        }
+        req.logIn(user, (err) => {
+          if (err) {
+            return next(err)
+          }
+          return res.send('OK')
+        })
+      })(req, res, next)
     } catch (error) {
       console.log(error)
     }
