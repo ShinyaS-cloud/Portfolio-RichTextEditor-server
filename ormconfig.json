@@ -5,15 +5,15 @@
   "username": "root",
   "password": "xV*W8of7CGN*kQAGb7MoJwsT",
   "database": "rich-text-editor",
-  "synchronize": true,
+  "synchronize": false,
   "logging": false,
-  "entities": ["src/entity/**/*.ts"],
+  "entities": ["dist/src/entity/**/*.js"],
   "migrations": ["src/migration/**/*.ts"],
   "subscribers": ["src/subscriber/**/*.ts"],
   "seeds": ["src/seeds/**/*{.ts,.js}"],
   "factories": ["src/factories/**/*{.ts,.js}"],
   "cli": {
-    "entitiesDir": "src/entity",
+    "entitiesDir": "dist/src/entity",
     "migrationsDir": "src/migration",
     "subscribersDir": "src/subscriber"
   }

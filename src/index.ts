@@ -1,7 +1,6 @@
 import 'reflect-metadata'
 // import createError from 'http-errors'
 import express from 'express'
-import path from 'path'
 import cookieParser from 'cookie-parser'
 import passport from 'passport'
 import { createConnection, getConnection, getRepository } from 'typeorm'
@@ -14,7 +13,7 @@ import bcrypt from 'bcrypt'
 import Google from 'passport-google-oauth20'
 import Local from 'passport-local'
 import { keys } from './config/keys'
-import { AuthUser } from './entity/Index'
+import { AuthUser, User } from './entity/Index'
 import { UserController } from './controllers/userController'
 import { ArticleController } from './controllers/articleController'
 import { MyMiddleware } from './middlewares/MyMiddleware'
@@ -43,6 +42,7 @@ createConnection()
     const ormConnection: any = getConnection().driver
     const store = new MysqlDBStore({}, ormConnection.pool)
     const authUserRepository = getRepository(AuthUser)
+    const userRepository = getRepository(User)
     // const EntityManager = getManager()
 
     const GoogleStrategy = Google.Strategy
@@ -97,10 +97,14 @@ createConnection()
               return done(undefined, existingUser)
             } else {
               console.log('We dont have a recode with this ID,make a new record!')
-              const user = new AuthUser()
-              user.googleId = profile.id
-              await authUserRepository.save(user)
-              return done(undefined, user)
+              const newAuthUser = new AuthUser()
+              newAuthUser.googleId = profile.id
+              const doneAuthUser = await authUserRepository.save(newAuthUser)
+              const newUser = new User()
+              newUser.authUser = newAuthUser
+              newUser.codename = '' + doneAuthUser.id
+              await userRepository.save(newUser)
+              return done(undefined, newAuthUser)
             }
           } catch (error) {
             console.log(error)
