@@ -103,6 +103,10 @@ createConnection()
               const newUser = new User()
               newUser.authUser = newAuthUser
               newUser.codename = '' + doneAuthUser.id
+              newUser.headerUrl =
+                'https://rich-text-editor-bucket.s3-ap-northeast-1.amazonaws.com/img/pet/img1.jpg'
+              newUser.avatarUrl =
+                'https://rich-text-editor-bucket.s3-ap-northeast-1.amazonaws.com/f_f_object_100_s256_f_object_100_0bg.png'
               await userRepository.save(newUser)
               return done(undefined, newAuthUser)
             }

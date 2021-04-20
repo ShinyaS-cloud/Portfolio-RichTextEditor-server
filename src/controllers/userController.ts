@@ -124,7 +124,12 @@ export class UserController {
       })
       const newUser = new User()
       newUser.authUser = newAuthUser
-      newUser.codename = '' + doneAuthUser.id
+      newUser.codename = req.body.name
+      newUser.introduction = req.body.introduction
+      newUser.headerUrl =
+        'https://rich-text-editor-bucket.s3-ap-northeast-1.amazonaws.com/img/pet/img1.jpg'
+      newUser.avatarUrl =
+        'https://rich-text-editor-bucket.s3-ap-northeast-1.amazonaws.com/f_f_object_100_s256_f_object_100_0bg.png'
       const doneUser = await this.userRepository.save(newUser)
       return doneUser
     } catch (error) {
@@ -138,7 +143,7 @@ export class UserController {
 
   @Get('/auth/google/callback')
   @UseBefore(passport.authenticate('google'))
-  @Redirect(process.env.FRONTEND_URL + '/edit/:codename')
+  @Redirect('https://master.d3h3awtsgh3ucy.amplifyapp.com/edit/:codename')
   async getGoogleCallback(
     @Session() session: any,
     @Req() req: express.Request,
