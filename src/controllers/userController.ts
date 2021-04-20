@@ -31,7 +31,7 @@ export class UserController {
   @Get('/api/current_user')
   async getCurrentUser(@Req() req: express.Request, @Res() res: express.Response) {
     if (!req.user) {
-      return res.send(req.user)
+      return res.send({ id: 0 })
     }
     // req.userにはpasswordやgoogleIdなどが入っているので外してクライアントに返す
     // req.userに型がついていないのでやむを得ずany型に変換
@@ -49,7 +49,7 @@ export class UserController {
   @Get('/api/logout')
   @UseBefore((req: express.Request, res: express.Response) => {
     req.logout()
-    return res.send(200)
+    return res.sendStatus(200)
   })
   getLogout() {}
 
@@ -105,7 +105,6 @@ export class UserController {
         if (err) {
           return next(err)
         }
-        return res.send('OK')
       })
     })(req, res, next)
   })
@@ -145,7 +144,7 @@ export class UserController {
   ) {
     const authUser = session.passport.user
     const returnUser = await this.userRepository.findOne({ where: { authUserId: authUser.id } })
-    return returnUser
+    return res.redirect('/edit/' + returnUser?.codename)
   }
 
   @UseBefore(MyMiddleware)
@@ -165,10 +164,10 @@ export class UserController {
     }
     newAuthUser.email = req.body.email
     newAuthUser.password = req.body.password
-    const doneAuthUser = await this.authUserRepository.save(newAuthUser)
+    await this.authUserRepository.save(newAuthUser)
     const newUser = { ...prevUser, name: req.body.name, introduction: req.body.introduction }
-    await this.userRepository.save(newUser)
-    return doneAuthUser
+    const doneUser = await this.userRepository.save(newUser)
+    return doneUser
   }
 
   /**
