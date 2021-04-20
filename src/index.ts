@@ -29,7 +29,7 @@ const MysqlDBStore = mysqlFunc(expressSession)
 const app = express()
 const secret = 'fherafhukfsrhgbnsgukrvbkakrekgfk'
 const csrfProtection = csrf({ cookie: true })
-app.use(cors())
+app.use(cors({ credentials: true, origin: true }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
@@ -137,6 +137,12 @@ createConnection()
     app.use(passport.initialize())
     app.use(passport.session())
 
+    useExpressServer(app, {
+      cors: true,
+      controllers: [UserController, ArticleController],
+      middlewares: [MyMiddleware]
+    })
+
     app.post(
       '/api/login',
       (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -156,11 +162,6 @@ createConnection()
         })(req, res, next)
       }
     )
-
-    useExpressServer(app, {
-      controllers: [UserController, ArticleController],
-      middlewares: [MyMiddleware]
-    })
 
     const PORT = process.env.PORT || 8080
     app.listen(PORT)
