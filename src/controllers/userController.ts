@@ -18,6 +18,7 @@ import express from 'express'
 
 import passport from 'passport'
 import { getRepository } from 'typeorm'
+import cors from 'cors'
 
 import { MyMiddleware } from '../middlewares/MyMiddleware'
 import { AuthUser, User, Follows } from '../entity/Index'
@@ -133,11 +134,11 @@ export class UserController {
   }
 
   @Get('/auth/google')
-  @UseBefore(passport.authenticate('google', { scope: ['profile', 'email'] }))
+  @UseBefore(cors(), passport.authenticate('google', { scope: ['profile', 'email'] }))
   getGoogleLogin() {}
 
   @Get('/auth/google/callback')
-  @UseBefore(passport.authenticate('google'))
+  @UseBefore(cors(), passport.authenticate('google'))
   async getGoogleCallback(
     @Session() session: any,
     @Req() req: express.Request,

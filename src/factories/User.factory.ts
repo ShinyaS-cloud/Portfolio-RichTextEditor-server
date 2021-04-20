@@ -11,9 +11,16 @@ define(User, (faker: typeof Faker) => {
   user.name = faker.name.findName()
   user.codename = faker.name.firstName().toLowerCase()
   user.introduction = faker.random.words(5)
-  user.avatarUrl = faker.random.arrayElement(avatars)
+  user.avatarUrl =
+    'https://rich-text-editor-bucket.s3-ap-northeast-1.amazonaws.com/' +
+    faker.random.arrayElement(avatars)
   const seed = faker.random.number(99) + 1
-  const mockImages = 'img/' + category[categoryNumber] + '/img' + seed + '.jpg'
+  const mockImages =
+    'https://rich-text-editor-bucket.s3-ap-northeast-1.amazonaws.com/img/' +
+    category[categoryNumber] +
+    '/img' +
+    seed +
+    '.jpg'
   user.headerUrl = mockImages
   return user
 })

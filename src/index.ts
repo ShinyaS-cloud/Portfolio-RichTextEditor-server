@@ -29,7 +29,7 @@ const MysqlDBStore = mysqlFunc(expressSession)
 const app = express()
 const secret = 'fherafhukfsrhgbnsgukrvbkakrekgfk'
 const csrfProtection = csrf({ cookie: true })
-app.use(cors({ credentials: true, origin: true }))
+app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())

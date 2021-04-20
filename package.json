@@ -4,10 +4,10 @@
   "private": true,
   "main": "dist/src/index.js",
   "scripts": {
-    "typeorm": "ts-node -r tsconfig-paths/register node_modules/typeorm/cli.js",
+    "typeorm": "node -r tsconfig-paths/register node_modules/typeorm/cli.js",
     "test": "jest",
-    "seed:config": "ts-node ./node_modules/typeorm-seeding/dist/cli.js config",
-    "seed:run": "ts-node ./node_modules/typeorm-seeding/dist/cli.js seed",
+    "seed:config": "node ./node_modules/typeorm-seeding/dist/cli.js config",
+    "seed:run": "node ./node_modules/typeorm-seeding/dist/cli.js seed",
     "dev": "nodemon ./src/index.ts",
     "clean": "rimraf dist/*",
     "tsc": "tsc -p .",
