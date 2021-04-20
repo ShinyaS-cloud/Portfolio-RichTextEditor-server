@@ -10,7 +10,6 @@ import {
   Req,
   Res,
   Session,
-  UseAfter,
   UseBefore
 } from 'routing-controllers'
 
@@ -94,25 +93,10 @@ export class UserController {
   }
 
   @Post('/api/signup')
-  @UseAfter((req: express.Request, res: express.Response, next: express.NextFunction) => {
-    passport.authenticate('local', (err, user, info) => {
-      if (err) {
-        return next(err)
-      }
-      if (!user) {
-        return res.send(info)
-      }
-      req.logIn(user, (err) => {
-        if (err) {
-          return next(err)
-        }
-      })
-    })(req, res, next)
-  })
   async postSignUp(@Req() req: express.Request, @Res() res: express.Response) {
     const existingUser = await this.authUserRepository.findOne({ where: { email: req.body.email } })
     if (existingUser) {
-      return res.send('already exist user!!')
+      return res.send({ error: 'error' })
     }
     const newAuthUser = new AuthUser()
     newAuthUser.email = req.body.email
