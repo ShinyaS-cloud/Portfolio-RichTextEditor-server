@@ -111,21 +111,8 @@ export class UserController {
         'https://rich-text-editor-bucket.s3-ap-northeast-1.amazonaws.com/img/pet/img1.jpg'
       newUser.avatarUrl =
         'https://rich-text-editor-bucket.s3-ap-northeast-1.amazonaws.com/f_f_event_66_s256_f_event_66_0bg.png'
-      await this.userRepository.save(newUser)
-      passport.authenticate('local', (err, user, info) => {
-        if (err) {
-          return next(err)
-        }
-        if (!user) {
-          return res.send(info)
-        }
-        req.logIn(user, (err) => {
-          if (err) {
-            return next(err)
-          }
-          return res.send('OK')
-        })
-      })(req, res, next)
+      const doneUser = await this.userRepository.save(newUser)
+      return doneUser
     } catch (error) {
       console.log(error)
     }
