@@ -137,8 +137,6 @@ createConnection()
     app.use(passport.initialize())
     app.use(passport.session())
 
-    app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }))
-    app.get('/auth/google/callback', passport.authenticate('google'))
     app.post(
       '/api/login',
       (req: express.Request, res: express.Response, next: express.NextFunction) => {

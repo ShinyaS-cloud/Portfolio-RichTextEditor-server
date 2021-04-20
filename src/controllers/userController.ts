@@ -49,7 +49,7 @@ export class UserController {
   @Get('/api/logout')
   @UseBefore((req: express.Request, res: express.Response) => {
     req.logout()
-    res.redirect('/')
+    return res.send(200)
   })
   getLogout() {}
 
@@ -130,6 +130,22 @@ export class UserController {
     } catch (error) {
       console.log(error)
     }
+  }
+
+  @Get('/auth/google')
+  @UseBefore(passport.authenticate('google', { scope: ['profile', 'email'] }))
+  getGoogleLogin() {}
+
+  @Get('/auth/google/callback')
+  @UseBefore(passport.authenticate('google'))
+  async getGoogleCallback(
+    @Session() session: any,
+    @Req() req: express.Request,
+    @Res() res: express.Response
+  ) {
+    const authUser = session.passport.user
+    const returnUser = await this.userRepository.findOne({ where: { authUserId: authUser.id } })
+    return returnUser
   }
 
   @UseBefore(MyMiddleware)
