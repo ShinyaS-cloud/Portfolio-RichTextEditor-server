@@ -138,7 +138,6 @@ createConnection()
     app.use(passport.session())
 
     useExpressServer(app, {
-      cors: true,
       controllers: [UserController, ArticleController],
       middlewares: [MyMiddleware]
     })
