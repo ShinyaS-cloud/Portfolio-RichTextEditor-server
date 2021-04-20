@@ -6,6 +6,7 @@ import {
   JsonController,
   Post,
   QueryParam,
+  Redirect,
   Req,
   Res,
   Session,
@@ -137,6 +138,7 @@ export class UserController {
 
   @Get('/auth/google/callback')
   @UseBefore(passport.authenticate('google'))
+  @Redirect(process.env.FRONTEND_URL + '/edit/:codename')
   async getGoogleCallback(
     @Session() session: any,
     @Req() req: express.Request,
@@ -144,7 +146,7 @@ export class UserController {
   ) {
     const authUser = session.passport.user
     const returnUser = await this.userRepository.findOne({ where: { authUserId: authUser.id } })
-    return res.redirect('/edit/' + returnUser?.codename)
+    return { codename: returnUser?.codename }
   }
 
   @UseBefore(MyMiddleware)
