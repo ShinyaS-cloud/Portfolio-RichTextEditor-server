@@ -105,7 +105,8 @@ export class UserController {
       await this.authUserRepository.save(newAuthUser)
       const newUser = new User()
       newUser.authUser = newAuthUser
-      newUser.codename = req.body.name
+      newUser.name = req.body.name
+      newUser.codename = req.body.codename
       newUser.introduction = req.body.introduction
       newUser.headerUrl =
         'https://rich-text-editor-bucket.s3-ap-northeast-1.amazonaws.com/img/pet/img1.jpg'
@@ -136,8 +137,28 @@ export class UserController {
   }
 
   @UseBefore(MyMiddleware)
+  @Get('/api/userEdit')
+  async getEditUser(
+    @Session() session: any,
+    @Req() req: express.Request,
+    @Res() res: express.Response
+  ) {
+    const authUser = session.passport.user
+    const prevUser = await this.userRepository.findOne({ where: { authUserId: authUser.id } })
+    const prevAuthUser = await this.authUserRepository.findOne({
+      where: { id: authUser.id }
+    })
+    return {
+      name: prevUser?.name,
+      codename: prevUser?.codename,
+      email: prevAuthUser?.email,
+      introduction: prevUser?.introduction
+    }
+  }
+
+  @UseBefore(MyMiddleware)
   @Post('/api/userEdit')
-  async postEdit(
+  async postEditUser(
     @Session() session: any,
     @Req() req: express.Request,
     @Res() res: express.Response
